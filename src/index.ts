@@ -1,9 +1,144 @@
-import { Hono } from 'hono'
+import type { Context, Env } from 'hono';
+import { Hono } from 'hono';
+import { raw } from 'hono/html';
+// import {
+//     handleLogin,
+//     handleLoginPOST,
+//     handleLogout,
+//     handleMyAccount,
+//     handleResentVerificationEmailPOST,
+//     handleResetPassword,
+//     handleResetPasswordPOST,
+//     handleSetPasswordPOST,
+//     handleSignup,
+//     handleSignupPOST,
+//     handleVerifyEmail,
+// } from './account';
+// import { handleAdmin } from './admin';
+// import { changelog } from './changelog';
+// import { handleFeedback } from './feedback';
+import { renderHTML } from './htmltools';
+// import {
+//     handlePostEditPOST,
+//     handleBlog,
+//     handleBlogDeletePOST,
+//     handlePostEditItem,
+//     handlePostSingle,
+//     handleBlogPOST,
+//     handleBlogRss,
+//     handleUploadImage,
+// } from './blogs';
+import {
+    adminRequiredMiddleware,
+    authCheckMiddleware,
+    authRequiredMiddleware,
+    subdomainMiddleware,
+} from './middleware';
+import { handleHomepage } from './homepage';
 
-const app = new Hono<{ Bindings: CloudflareBindings }>()
+// ————————————————————————————————————————————————————————————————>>>>
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+// main app handles the root paths
+const app = new Hono<{ Bindings: CloudflareBindings }>({
+    strict: false,
+});
 
-export default app
+app.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
+
+app.use('*', authCheckMiddleware);
+// all routes below this line require authentication
+app.use('/my/*', authRequiredMiddleware);
+// all routes below this line require admin privileges
+app.use('/admin/*', adminRequiredMiddleware);
+
+const handleNotFound = (c: Context) => {
+    return c.html(renderHTML('404 | exotext', raw(`<div class="flash">Page not found.</div>`), c.get('USERNAME')));
+};
+
+const handleError = (err: Error, c: Context) => {
+    return c.html(renderHTML('Error | exotext', raw(`<div class="flash flash-red">${err}.</div>`), c.get('USERNAME')));
+};
+
+app.notFound(handleNotFound);
+app.onError(handleError);
+
+// APP ROUTES
+app.get('/', handleHomepage);
+
+// ADMIN ROUTES
+// app.get('/admin', handleAdmin);
+
+// app.get('/blogs/new', handleBlogsNew);
+// app.post('/blogs/new', handleBlogsNewPOST);
+
+// // NORMAL ROUTES
+// app.get('/feedback', handleFeedback);
+
+// app.get('/login', handleLogin);
+// app.post('/login', handleLoginPOST);
+// app.get('/reset_password', handleResetPassword);
+// app.post('/reset_password', handleResetPasswordPOST);
+// app.post('/set_password', handleSetPasswordPOST);
+// app.get('/signup', handleSignup);
+// app.post('/signup', handleSignupPOST);
+// app.get('/logout', authRequiredMiddleware, handleLogout);
+
+// app.get('/my/account', handleMyAccount);
+// app.post('/my/account/create_mblog', adminRequiredMiddleware, handleNewMblogPost);
+// app.post('/my/account/resend_verification_link', handleResentVerificationEmailPOST);
+// app.get('/verify_email', handleVerifyEmail);
+
+
+// app.get('/about', async (c: Context) => c.html(renderHTML('About | exotext', raw(about), c.get('USER_LOGGED_IN'))));
+// app.get('/about/changelog', async (c: Context) =>
+//     c.html(renderHTML('Changelog | exotext', raw(changelog), c.get('USER_LOGGED_IN'))),
+// );
+
+
+const subdomainApp = new Hono<{ Bindings: CloudflareBindings }>({
+    strict: false,
+});
+subdomainApp.use('*', authCheckMiddleware);
+subdomainApp.use('*', subdomainMiddleware);
+
+subdomainApp.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
+
+// subdomainApp.get('/', handleBlog);
+// subdomainApp.post('/', adminRequiredMiddleware, handleBlogPOST);
+// subdomainApp.post('/upload', adminRequiredMiddleware, handleUploadImage);
+
+// subdomainApp.get('/rss', handleBlogRss);
+// subdomainApp.get('/:post_slug', handlePostSingle);
+// subdomainApp.get('/:post_slug/edit', adminRequiredMiddleware, handlePostEditPost);
+// subdomainApp.post('/:post_slug/edit', adminRequiredMiddleware, handlePostEditPOST);
+// subdomainApp.post('/:post_slug/delete', adminRequiredMiddleware, handlePostDeletePOST);
+
+subdomainApp.notFound(handleNotFound);
+subdomainApp.onError(handleError);
+
+// Main app to route based on Host
+const appMain = new Hono<{ Bindings: CloudflareBindings }>({
+    strict: false,
+});
+
+appMain.all('*', async (c: Context, next) => {
+    const host = c.req.raw.headers.get('host'); // Cloudflare Workers use lowercase 'host'
+    if (host) {
+        if (host.split('.').length === 3) {
+            // if subdomain is in the form of sub.example.com
+            return await subdomainApp.fetch(c.req.raw, c.env);
+        }
+        // Default to root app for the main domain (example.com)
+        return await app.fetch(c.req.raw, c.env);
+    }
+    return await app.fetch(c.req.raw, c.env);
+});
+
+// MAIN EXPORT
+export default {
+    fetch: (req: Request, env: Env, ctx: ExecutionContext) => appMain.fetch(req, env, ctx), // normal processing of requests
+
+    // async scheduled(event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
+    //     // scheduled tasks
+    // },
+};

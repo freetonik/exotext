@@ -3,11 +3,28 @@ name = "exotext"
 main = "src/index.ts"
 compatibility_date = "2024-10-22"
 
+routes = [
+  { pattern = "exotext.com", custom_domain = true }
+]
+
+[placement]
+mode = "smart"
+
 # Workers Logs
 # Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
 # Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs
 [observability]
 enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "exotext"
+database_id = "4b0d1f02-b9bc-4f89-a18b-a3f70db93807"
+
+[[kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "bda520fade10435b8cecf65b3af9e799"
+preview_id = "90c4c44b69f14a21b4cc0fefef1f3bb6"
 
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
