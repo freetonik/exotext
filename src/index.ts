@@ -1,40 +1,37 @@
 import type { Context, Env } from 'hono';
 import { Hono } from 'hono';
 import { raw } from 'hono/html';
-// import {
-//     handleLogin,
-//     handleLoginPOST,
-//     handleLogout,
-//     handleMyAccount,
-//     handleResentVerificationEmailPOST,
-//     handleResetPassword,
-//     handleResetPasswordPOST,
-//     handleSetPasswordPOST,
-//     handleSignup,
-//     handleSignupPOST,
-//     handleVerifyEmail,
-// } from './account';
+import {
+    handleLogin,
+    handleLoginPOST,
+    handleLogout,
+    handleMyAccount,
+    handleNewBlogPost,
+    handleResentVerificationEmailPOST,
+    handleResetPassword,
+    handleResetPasswordPOST,
+    handleSetPasswordPOST,
+    handleSignup,
+    handleSignupPOST,
+    handleVerifyEmail,
+} from './account';
+import {
+    handleBlog,
+    handleBlogPOST, // new blog post handler
+    handlePostDeletePOST,
+    handlePostEditPOST,
+    handlePostEditor,
+    handlePostSingle,
+} from './blogs';
+import { handleHomepage } from './homepage';
 // import { handleAdmin } from './admin';
-// import { changelog } from './changelog';
-// import { handleFeedback } from './feedback';
 import { renderHTML } from './htmltools';
-// import {
-//     handlePostEditPOST,
-//     handleBlog,
-//     handleBlogDeletePOST,
-//     handlePostEditItem,
-//     handlePostSingle,
-//     handleBlogPOST,
-//     handleBlogRss,
-//     handleUploadImage,
-// } from './blogs';
 import {
     adminRequiredMiddleware,
     authCheckMiddleware,
     authRequiredMiddleware,
     subdomainMiddleware,
 } from './middleware';
-import { handleHomepage } from './homepage';
 
 // ————————————————————————————————————————————————————————————————>>>>
 
@@ -68,32 +65,24 @@ app.get('/', handleHomepage);
 // ADMIN ROUTES
 // app.get('/admin', handleAdmin);
 
-// app.get('/blogs/new', handleBlogsNew);
-// app.post('/blogs/new', handleBlogsNewPOST);
-
 // // NORMAL ROUTES
 // app.get('/feedback', handleFeedback);
 
-// app.get('/login', handleLogin);
-// app.post('/login', handleLoginPOST);
-// app.get('/reset_password', handleResetPassword);
-// app.post('/reset_password', handleResetPasswordPOST);
-// app.post('/set_password', handleSetPasswordPOST);
-// app.get('/signup', handleSignup);
-// app.post('/signup', handleSignupPOST);
-// app.get('/logout', authRequiredMiddleware, handleLogout);
+app.get('/login', handleLogin);
+app.post('/login', handleLoginPOST);
+app.get('/reset_password', handleResetPassword);
+app.post('/reset_password', handleResetPasswordPOST);
+app.post('/set_password', handleSetPasswordPOST);
+app.get('/signup', handleSignup);
+app.post('/signup', handleSignupPOST);
+app.get('/logout', authRequiredMiddleware, handleLogout);
 
-// app.get('/my/account', handleMyAccount);
-// app.post('/my/account/create_mblog', adminRequiredMiddleware, handleNewMblogPost);
-// app.post('/my/account/resend_verification_link', handleResentVerificationEmailPOST);
-// app.get('/verify_email', handleVerifyEmail);
-
+app.get('/my/account', handleMyAccount);
+app.post('/my/account/create_blog', adminRequiredMiddleware, handleNewBlogPost);
+app.post('/my/account/resend_verification_link', handleResentVerificationEmailPOST);
+app.get('/verify_email', handleVerifyEmail);
 
 // app.get('/about', async (c: Context) => c.html(renderHTML('About | exotext', raw(about), c.get('USER_LOGGED_IN'))));
-// app.get('/about/changelog', async (c: Context) =>
-//     c.html(renderHTML('Changelog | exotext', raw(changelog), c.get('USER_LOGGED_IN'))),
-// );
-
 
 const subdomainApp = new Hono<{ Bindings: CloudflareBindings }>({
     strict: false,
@@ -103,15 +92,15 @@ subdomainApp.use('*', subdomainMiddleware);
 
 subdomainApp.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
-// subdomainApp.get('/', handleBlog);
-// subdomainApp.post('/', adminRequiredMiddleware, handleBlogPOST);
-// subdomainApp.post('/upload', adminRequiredMiddleware, handleUploadImage);
+subdomainApp.get('/', handleBlog);
+subdomainApp.post('/', authCheckMiddleware, handleBlogPOST);
+// subdomainApp.post('/upload', authCheckMiddleware, handleUploadImage);
 
 // subdomainApp.get('/rss', handleBlogRss);
-// subdomainApp.get('/:post_slug', handlePostSingle);
-// subdomainApp.get('/:post_slug/edit', adminRequiredMiddleware, handlePostEditPost);
-// subdomainApp.post('/:post_slug/edit', adminRequiredMiddleware, handlePostEditPOST);
-// subdomainApp.post('/:post_slug/delete', adminRequiredMiddleware, handlePostDeletePOST);
+subdomainApp.get('/:post_slug', handlePostSingle);
+subdomainApp.get('/:post_slug/edit', authCheckMiddleware, handlePostEditor);
+subdomainApp.post('/:post_slug/edit', authCheckMiddleware, handlePostEditPOST);
+subdomainApp.post('/:post_slug/delete', authCheckMiddleware, handlePostDeletePOST);
 
 subdomainApp.notFound(handleNotFound);
 subdomainApp.onError(handleError);

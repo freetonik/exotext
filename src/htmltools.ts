@@ -1,7 +1,11 @@
-import { html } from 'hono/html';
+import { html, raw } from 'hono/html';
 import { renderedCSS } from './css';
 
 export const renderHTML = (title: string, inner: string, user_logged_in: boolean) => {
+    const userBlock = user_logged_in
+        ? `<a href="/my/account">account</a>`
+        : `<span><a href="/login" class="bold">Log in</a> | <a class="bold" href="/signup">Sign up</a></span>`;
+
     return html`
     <!DOCTYPE html>
     <html lang="en" style="height: 100%;">
@@ -14,6 +18,15 @@ export const renderHTML = (title: string, inner: string, user_logged_in: boolean
         <style>${renderedCSS}</style>
     </head>
     <body style="height: 100%; display: flex; flex-direction: column;">
+    <header>
+        <nav aria-label="Site navigation">
+            <div>
+                <a href="/" class="logo"><span>⬤</span> <span class="bold" style="margin-left: 0.2em;margin-right:1.5em;">exotext</span></a>
+                <a href="/my">My feed</a>
+            </div>
+            ${raw(userBlock)}
+        </nav>
+    </header>
     ${inner}
     </body>
     </html>`;
@@ -50,8 +63,7 @@ export const renderItemShort = (
     `;
 };
 
-
-export const renderMblogEditor = (title = '', content = '') => {
+export const renderPostEditor = (title = '', content = '') => {
     return `
     <script src="https://unpkg.com/tiny-markdown-editor@0.1.29/dist/tiny-mde.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.3/htmx.min.js" integrity="sha512-dQu3OKLMpRu85mW24LA1CUZG67BgLPR8Px3mcxmpdyijgl1UpCM1RtJoQP6h8UkufSnaHVRTUx98EQT9fcKohw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>

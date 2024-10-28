@@ -31,8 +31,10 @@ CREATE TABLE IF NOT EXISTS blogs (
     blog_id INTEGER PRIMARY KEY,
     description TEXT,
     slug TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    title TEXT NOT NULL
+    title TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_blogs_on_slug ON blogs(slug);
 

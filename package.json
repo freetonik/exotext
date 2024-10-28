@@ -1,15 +1,19 @@
 {
-  "name": "exotext",
-  "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
-  },
-  "dependencies": {
-    "hono": "^4.6.7"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241022.0",
-    "wrangler": "^3.79.0"
-  }
+    "name": "exotext",
+    "scripts": {
+        "dev": "wrangler dev --port 8183",
+        "dev-sub": "wrangler dev src/index.ts --host blog.localhost.dev --port 8184",
+        "deploy": "wrangler deploy --minify",
+        "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    },
+    "dependencies": {
+        "hono": "^4.6.7",
+        "@aws-sdk/client-ses": "^3.668.0",
+        "marked": "^14.1.2"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "^4.20241022.0",
+        "wrangler": "^3.79.0",
+        "@biomejs/biome": "1.9.3"
+    }
 }
