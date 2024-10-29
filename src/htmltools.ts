@@ -1,14 +1,26 @@
 import { html, raw } from 'hono/html';
 import { renderedCSS } from './css';
 
-export const renderHTML = (title: string, inner: string, user_logged_in: boolean) => {
+export const renderHTML = (
+    title: string,
+    inner: string,
+    user_logged_in: boolean,
+    customize = {
+        footer: true,
+    },
+) => {
     const userBlock = user_logged_in
         ? `<a href="/my/account">account</a>`
         : `<span><a href="/login" class="bold">Log in</a> | <a class="bold" href="/signup">Sign up</a></span>`;
 
+    const footer = customize.footer
+        ? raw(`<footer>
+            <p>Powered by <a href="https://exotext.com">Exotext</a></p>
+        </footer>`)
+        : '';
     return html`
     <!DOCTYPE html>
-    <html lang="en" style="height: 100%;">
+    <html lang="en">
     <head>
         <meta charset="utf-8">
         <title>${title}</title>
@@ -17,17 +29,15 @@ export const renderHTML = (title: string, inner: string, user_logged_in: boolean
         <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBkPSJtMTIuNjcyLjY2OCAzLjA1OSA2LjE5NyA2LjgzOC45OTNhLjc1Ljc1IDAgMCAxIC40MTYgMS4yOGwtNC45NDggNC44MjMgMS4xNjggNi44MTJhLjc1Ljc1IDAgMCAxLTEuMDg4Ljc5TDEyIDE4LjM0N2wtNi4xMTYgMy4yMTZhLjc1Ljc1IDAgMCAxLTEuMDg4LS43OTFsMS4xNjgtNi44MTEtNC45NDgtNC44MjNhLjc0OS43NDkgMCAwIDEgLjQxNi0xLjI3OWw2LjgzOC0uOTk0TDExLjMyNy42NjhhLjc1Ljc1IDAgMCAxIDEuMzQ1IDBaIj48L3BhdGg+PC9zdmc+" />
         <style>${renderedCSS}</style>
     </head>
-    <body style="height: 100%; display: flex; flex-direction: column;">
-    <header>
-        <nav aria-label="Site navigation">
-            <div>
-                <a href="/" class="logo"><span>⬤</span> <span class="bold" style="margin-left: 0.2em;margin-right:1.5em;">exotext</span></a>
-                <a href="/my">My feed</a>
-            </div>
-            ${raw(userBlock)}
-        </nav>
-    </header>
-    ${inner}
+    <body>
+    <div class="container">
+        
+
+        ${inner}
+
+        ${footer}
+    </div>
+    
     </body>
     </html>`;
 };
@@ -65,32 +75,41 @@ export const renderItemShort = (
 
 export const renderPostEditor = (title = '', content = '') => {
     return `
+    
     <script src="https://unpkg.com/tiny-markdown-editor@0.1.29/dist/tiny-mde.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.3/htmx.min.js" integrity="sha512-dQu3OKLMpRu85mW24LA1CUZG67BgLPR8Px3mcxmpdyijgl1UpCM1RtJoQP6h8UkufSnaHVRTUx98EQT9fcKohw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <div class="editor-container">
+
     <form style="height: 100%; display: flex; flex-direction: column;" method="POST">
-        <div style="margin-bottom:1em;">
-            <input type="text" id="post-title" name="post-title" value="${title}">
+
+        <div class="title-input">
+            <input id="post-title" name="post-title" type="text" placeholder="Post title" value="${title}" autofocus>
         </div>
+
         <div style="flex-grow: 1; height: 100%; display: flex; flex-direction: column;">
             <textarea id="txt" name="post-content" placeholder="Here we go..." rows=12>${content}</textarea>
             <div id="toolbar"></div>
-            <div id="tinymde" style="height:300px; overflow-y:scroll; border:1px solid #c0c0c0; background-color: white;padding:0.25em;flex-grow: 1;"></div>
+            <div id="tinymde" style="height:300px; overflow-y:scroll; border: 1px solid var(--color-border); background-color: white;padding:0.25em;flex-grow: 1;"></div>
         </div>
         <div id="uploadedImages">
         </div>
-        <div style="padding-top: 1em;">
-            <input type="submit" name="action" value="Publish">
-            <input type="submit" name="action" value="Save">
+
+        <div class="publishing-controls">
+            <div class="markdown-help">
+                :-)
+            </div>
+            <div class="buttons">
+                <input type="submit" name="action" value="Publish">
+                <input type="submit" name="action" value="Save">
+                    
+            </div>
         </div>
-    </form>
 
 
-    <form id='form' hx-encoding='multipart/form-data' hx-post='/upload' hx-swap="none">
-        <input type='file' name='image'>
-        <button>
-            Upload
-        </button>
     </form>
+
+    </div>
 
     <script>
         htmx.on('#form', 'htmx:afterOnLoad', function(evt) {
@@ -288,9 +307,7 @@ export const renderPostEditor = (title = '', content = '') => {
     }
 
     .TMCommandBar {
-    background-color:#f8f8f8;
     height:24px;
-    border:4px solid #f8f8f8;
     box-sizing: content-box;
     display:flex;
     -webkit-user-select: none;
@@ -299,6 +316,7 @@ export const renderPostEditor = (title = '', content = '') => {
         overflow-y: hidden;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    margin-bottom: 0.35em;
     }
 
     .TMCommandBar::-webkit-scrollbar {

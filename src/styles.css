@@ -1,6 +1,3 @@
-// This file is auto-generated. Do not edit directly.
-import { raw } from 'hono/html';
-export const renderedCSS = raw(`
 :root {
     --font-sans: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
     --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
@@ -547,4 +544,3 @@ footer a {
         margin-bottom: 4rem;
     }
 }
-`); 

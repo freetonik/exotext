@@ -28,19 +28,26 @@ export const handleMyAccount = async (c: Context) => {
            </form>`
         : '';
 
-    const verified = user.results[0].email_verified ? 'yes' : `no ${resend_verification_link_form}`;
+    const verifiedOrNot = user.results[0].email_verified
+        ? '<span class="label label-green" style="margin-left:0.5rem;">verified</span>'
+        : `<span class="label label-red" style="margin-left:0.5rem;">verified</span> ${resend_verification_link_form}`;
+
     const email = user.results[0].email ? user.results[0].email : 'no';
     const username = user.results[0].username;
     const status = user.results[0].status;
 
-    let listOfBlogs = '';
+    let listOfBlogs = '<section class="settings-section"><h2>MY BLOGS</h2><div class="blogs-list">';
     if (user_blogs.results.length > 0) {
-        listOfBlogs += '<h3>My blogs</h3><ul>';
         for (const blog of user_blogs.results) {
-            listOfBlogs += `<li><a href="https://${blog.slug}.exotext.com">${blog.title}</a></li>`;
+            listOfBlogs += `
+            <div class="blog-item">
+                <div class="blog-title">${blog.title}</div>
+                <a href="https://${blog.slug}.exotext.com" class="blog-url">https://${blog.slug}.exotext.com</a>
+            </div>
+            `;
         }
-        listOfBlogs += '</ul>';
     }
+    listOfBlogs += '</div></section>';
 
     let new_blog_form = '';
     if (c.get('USER_IS_ADMIN')) {
@@ -70,21 +77,37 @@ export const handleMyAccount = async (c: Context) => {
     `;
     }
     const list = `
-    <h1>My account</h1>
-    <p>
-        Username: ${username}<br>
-        Profile: <a href="/users/${username}">${username}</a><br>
-        Account status: ${status}<br>
-    </p>
-    <p>
-        Email: ${email}<br>
-        Email verified: ${verified}<br>
-    </p>
+    <style>.container{max-width: 680px;}</style>
+    <nav>
+        <a href="/" class="logo">EXOTEXT</a>
+    </nav>
+
+    <main>
+        <section class="settings-section">
+            <h1>My account</h1>
+            <div class="account-info">
+                <div class="info-row">
+                    <span class="label">USERNAME</span>
+                    <span class="value">${username}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">EMAIL</span>
+                    <span class="value">
+                        ${email}
+                        ${verifiedOrNot}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="label">MEMBER SINCE</span>
+                    <span class="value">October 2024</span>
+                </div>
+            </div>
+
     ${listOfBlogs}
-    ${new_blog_form}
-    <p style="margin-top:2em;">
-        <a href="/logout">Log out</a>
-    </p>`;
+    
+    <div class="button-group">
+         <a class="button" href="/logout">Log out</a>
+    </div>`;
 
     return c.html(renderHTML('My account | exotext', raw(list), username));
 };
@@ -154,31 +177,37 @@ export const handleLogin = async (c: Context) => {
     if (c.get('USER_ID')) return c.redirect('/my');
 
     const list = `
-    <div style="max-width:25em;margin:auto;">
-        <div class="borderbox">
-            <h2 style="margin-top:0;">Log in</h2>
-            <form action="/login" method="POST">
-                <div style="margin-bottom:1em;">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required />
-                </div>
+    <div class="container-sm service-page">
+    <nav>
+        <a href="/" class="logo">EXOTEXT</a>
+    </nav>
 
-                <div style="margin-bottom:2em;">
-                <label for="pass">Password (8 characters minimum)</label>
-                <input type="password" id="pass" name="password" minlength="8" required />
-                </div>
+    <main>
+        <h1>Sign In</h1>
 
-                <input type="submit" value="Log in">
-            </form>
-        </div>
-        <p style="text-align:center;">
-            Forgot your password? <a href="/reset_password">Reset it here</a>.<br>
-            Don't have an account? <a href="/signup">Sign up here</a>.
-        </p>
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="text">USERNAME</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">PASSWORD</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <input type="submit" value="Sign in">
+
+            <div class="links">
+                <a href="/reset_password">Forgot your password?</a>
+                <a href="/signup">Create an account</a>
+            </div>
+        </form>
+    </main>
     </div>
 
     `;
-    return c.html(renderHTML('Login or create account | exotext', raw(list), false));
+    return c.html(renderHTML('Login or create account | exotext', raw(list), false, { footer: false }));
 };
 
 export const handleResetPassword = async (c: Context) => {
@@ -207,22 +236,37 @@ export const handleResetPassword = async (c: Context) => {
     } else {
         // no code provided, show form to enter email
         inner = `
-        <div style="max-width:25em;margin:auto;">
-            <div class="borderbox">
-            <h2 style="margin-top:0;">Reset password</h2>
-            <form action="/reset_password" method="POST">
-                <div style="margin-bottom:2em;">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" name="email" required />
-                </div>
-                <input type="submit" value="Reset password">
-            </form>
+        <div class="container-sm service-page">
+
+        <nav>
+            <a href="/" class="logo">EXOTEXT</a>
+        </nav>
+
+        <main>
+            <div class="form-state">
+                <h1>Reset Password</h1>
+                <p>Enter your email address and we'll send you instructions to reset your password.</p>
+
+                <form action="/reset_password" method="POST">
+                    <div class="form-group">
+                        <label for="email">EMAIL</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <input type="submit" value="Reset password">
+                </form>
             </div>
+
+            <div class="links">
+                <a href="/login">Return to sign in</a>
+            </div>
+        </main>
+
         </div>
         `;
     }
 
-    return c.html(renderHTML('Reset password | exotext', raw(inner), false));
+    return c.html(renderHTML('Reset password | exotext', raw(inner), false, { footer: false }));
 };
 
 export const handleResetPasswordPOST = async (c: Context) => {
@@ -297,41 +341,87 @@ export const handleSignup = async (c: Context) => {
     if (c.get('USER_LOGGED_IN')) return c.redirect('/my');
 
     const inner = `
-    <div style="max-width:25em;margin:auto;">
+    <style>
+    .help-text {
+        display: block;
+        font-family: monospace;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        color: var(--help-color);
+    }
+    /* Password Requirements */
+    .requirements {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: var(--help-color);
+        margin-top: 0.5rem;
+    }
 
-    <div class="borderbox">
-        <h2 style="margin-top:0;">Create account</h2>
+    .requirements ul {
+        list-style: none;
+        margin-top: 0.5rem;
+    }
+    .blog-url-preview {
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: var(--secondary-text);
+        margin-top: 0.5rem;
+    }
+    </style>
+    <div class="container-sm service-page">
+    <nav>
+        <a href="/" class="logo">EXOTEXT</a>
+    </nav>
+
+    <main>
+        <h1>Sign up</h1>
+
         <form action="/signup" method="POST">
-            <div style="margin-bottom:1em;">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required />
-        </div>
+            <div class="form-group">
+                <label for="invitation_code">INVITATION CODE</label>
+                <input type="text" id="invitation_code" name="invitation_code" required>
+            </div>
 
-        <div style="margin-bottom:1em;">
-            <label for="pass">Password (8 characters minimum)</label>
-            <input type="password" id="pass" name="password" minlength="8" required />
-        </div>
+            <div class="form-group">
+                <label for="username">USERNAME</label>
+                <input type="text" id="username" name="username" required>
+                <span class="help-text">Your display name. Can be changed later.</span>
+            </div>
 
-        <div style="margin-bottom:2em;">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required />
-        </div>
+            <div class="form-group">
+                <label for="email">EMAIL</label>
+                <input type="email" id="email" name="email" required>
+            </div>
 
-        <div style="margin-bottom:2em;">
-            <label for="slug">Blog address</label>
-            <input type="text" id="slug" name="slug" required />.exotext.com
-        </div>
+            <div class="form-group">
+                <label for="slug">BLOG URL</label>
+                <input type="text" id="slug" name="slug" required 
+                        pattern="[a-zA-Z0-9-]+" title="Only letters, numbers, and hyphens are allowed">
+                <div class="blog-url-preview">.exotext.com</div>
+            </div>
 
-        <div style="margin-bottom:2em;">
-            <label for="invitation_code">Invitation code:</label>
-            <input type="text" id="invitation_code" name="invitation_code" required />
-        </div>
+            <div class="form-group">
+                <label for="password">PASSWORD</label>
+                <input type="password" id="password" name="password" required>
+                <div class="requirements">
+                    <ul>
+                        <li>• At least 8 characters</li>
+                        <li>• Should not contain dad jokes</li>
+                    </ul>
+                </div>
+            </div>
 
-        <input class="blue" type="submit" value="Create account">
-    </form>
+            <input type="submit" value="Create account">
+
+            <div class="links">
+                <span>Already have an account? <a href="/login">Sign in</a></span>
+            </div>
+        </form>
+    </main>
+
     </div>
     `;
-    return c.html(renderHTML('Create account | exotext', raw(inner), false));
+    return c.html(renderHTML('Create account | exotext', raw(inner), false, { footer: false }));
 };
 
 export const handleLoginPOST = async (c: Context) => {

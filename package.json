@@ -4,7 +4,8 @@
         "dev": "wrangler dev --port 8183",
         "dev-sub": "wrangler dev src/index.ts --host blog.localhost.dev --port 8184",
         "deploy": "wrangler deploy --minify",
-        "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+        "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+        "watch-css": "node watcher.js"
     },
     "dependencies": {
         "hono": "^4.6.7",

@@ -1,4 +1,4 @@
-import { Context } from 'hono';
+import type { Context } from 'hono';
 import { raw } from 'hono/html';
 import { marked } from 'marked';
 import { renderHTML, renderPostEditor } from './htmltools';
@@ -28,23 +28,38 @@ export const handleBlog = async (c: Context) => {
     const blog = batch[0].results[0];
     const posts = batch[1].results;
 
-    let list = `<h1>${blog.title}</h1>`;
+    // let list = `<h1>${blog.title}</h1>`;
+
+    let list = `
+        <header class="blog-header">
+            <h1>${blog.title}</h1>
+            
+            <p class="blog-description">Observations on technology, literature, and the spaces between. Written sporadically, with care.</p>
+        </header>
+        
+    `;
+
     if (userLoggedIn && userId === blog.user_id) {
         list += `
+        <details class="quick-draft">
+            <summary>Quick draft</summary>
+            
+            
         <form style="margin-bottom: 3em;" method="POST">
         <div style="margin-bottom:1em;">
             <input type="text" id="post-title" name="post-title" hidden>
         </div>
         <div style="margin-bottom:1em;">
-            <textarea style="resize: vertical;" id="txt" name="post-content" placeholder="Quick draft..." rows=10></textarea>
+            <textarea id="txt" name="post-content" placeholder="Quick draft..." rows=10></textarea>
 
         </div>
-        <div>
+        <div class="buttons">
             <input type="submit" name="action" value="Quick save">
             <input type="submit" name="action" value="Continue editing in full">
         </div>
 
-    </form>
+        </form>
+        </details>
         `;
     }
 
@@ -53,22 +68,22 @@ export const handleBlog = async (c: Context) => {
         return `${monthNames[date.getMonth()]} ${date.getDate().toString().padStart(2, '0')}, ${date.getFullYear()}`;
     };
 
-    list += `<ul style="list-style-type: none; padding-left: 0;">`;
+    list += `<section class="posts">`;
     for (const post of posts) {
         if (post.status !== 'public' && (!userLoggedIn || userId !== blog.user_id)) continue;
         const postDate = formatDate(new Date(post.pub_date));
         let status_block = '';
-        if (userLoggedIn && userId === blog.user_id) {
-            status_block = `(${post.status})`;
+        if (userLoggedIn && userId === blog.user_id && post.status === 'draft') {
+            status_block = ' <span class="label label-inline">draft</span>';
         }
         list += `
-            <li style="margin-bottom: 0.25em;">
-                <span class="muted" style="font-family: monospace; letter-spacing: -0.07em; margin-right: 0.5em;">${postDate}</span>
-                <a href="/${post.slug}">${post.title}</a> ${status_block}
-            </li>
+            <a href="/${post.slug}" class="post-item">
+                <time class="post-date">${postDate}</time>
+                <h2 class="post-title">${post.title}${status_block}</h2>
+            </a>
             `;
     }
-    list += '</ul>';
+    list += '</section>';
 
     return c.html(renderHTML(`${blog.title}`, raw(list), userLoggedIn));
 };
@@ -168,23 +183,34 @@ export const handlePostSingle = async (c: Context) => {
     const post_date = new Date(post.pub_date).toLocaleDateString('en-UK', date_format_opts);
 
     let list = `
-        <a href="/"><h3>${post.blog_title}</h3></a>
-        <h1>${post.title}</h1>
-        <div>${post.content_html}</div>
-        <time>${post_date}</time>
+    
+        <nav>
+            <a href="/" class="blog-link">← ${post.blog_title}</a>
+        </nav>
+        <article>
+            <header class="post-header">
+                <h1>${post.blog_title}</h1>
+                <time class="post-date">${post_date}</time>
+            </header>
+            <div class="post-content">
+            ${post.content_html}
+            </div>
+
         `;
 
     if (userLoggedIn && userId === post.user_id) {
         list += `
-            | <strong>${post.status}</strong>
+        <div style="margin-top:3em;">
+            <span class="label label-green">${post.status}</span>
             <div style="display: flex; gap: 10px;margin-top:1em;">
                 <form action="${post_slug}/delete" method="POST">
-                    <input type="submit" value="Delete" onclick="return confirm('Are you sure?')">
+                    <input class="button-secondary" type="submit" value="Delete" onclick="return confirm('Are you sure?')">
                 </form>
                 <form action="${post_slug}/edit" method="GET">
                     <input type="submit" value="Edit">
                 </form>
-            </div>`;
+            </div>
+        </div>`;
     }
 
     return c.html(renderHTML(`${post.title} | exotext`, raw(list), c.get('USER_LOGGED_IN')));
@@ -206,7 +232,7 @@ export const handlePostEditor = async (c: Context) => {
 
     const list = renderPostEditor(post.title, post.content_md);
 
-    return c.html(renderHTML(`${post.title} | ${post.feed_title}`, raw(list), c.get('USER_LOGGED_IN')));
+    return c.html(renderHTML(`${post.title} | ${post.feed_title}`, raw(list), true, { footer: false }));
 };
 
 export const handlePostEditPOST = async (c: Context) => {
@@ -230,6 +256,9 @@ export const handlePostEditPOST = async (c: Context) => {
     if (userId !== post.user_id) return c.text('Unauthorized', 401);
 
     const body = await c.req.parseBody();
+
+    console.log(body);
+
     const postTitle = body['post-title'].toString();
     if (!postTitle) return c.text('Post title is required');
     const contentMD = body['post-content'].toString();
