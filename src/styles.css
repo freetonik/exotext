@@ -543,4 +543,14 @@ footer a {
     nav {
         margin-bottom: 4rem;
     }
+
+    .post-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .post-date {
+        font-size: 0.85rem;
+    }
 }
