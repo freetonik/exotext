@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import { raw } from 'hono/html';
 import { marked } from 'marked';
+import { randomHash } from './account';
 import { renderHTML, renderPostEditor } from './htmltools';
 import { sanitizeHTML, truncate } from './utils';
 
@@ -28,11 +29,13 @@ export const handleBlog = async (c: Context) => {
     const blog = batch[0].results[0];
     const posts = batch[1].results;
 
-    // let list = `<h1>${blog.title}</h1>`;
-
+    const addButton =
+        userLoggedIn && userId === blog.user_id
+            ? `<a href="/${subdomain}/new"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d='M3 9.4c0-2.24 0-3.36.436-4.216a4 4 0 0 1 1.748-1.748C6.04 3 7.16 3 9.4 3h5.2c2.24 0 3.36 0 4.216.436a4 4 0 0 1 1.748 1.748C21 6.04 21 7.16 21 9.4v5.2c0 2.24 0 3.36-.436 4.216a4 4 0 0 1-1.748 1.748C17.96 21 16.84 21 14.6 21H9.4c-2.24 0-3.36 0-4.216-.436a4 4 0 0 1-1.748-1.748C3 17.96 3 16.84 3 14.6zM15.5 12H12m0 0H8.5m3.5 0V8.5m0 3.5v3.5'/></svg></a>`
+            : '';
     let list = `
         <header class="blog-header">
-            <h1>${blog.title}</h1>
+            <h1>${blog.title}${addButton}</h1>
             
             <p class="blog-description">Observations on technology, literature, and the spaces between. Written sporadically, with care.</p>
         </header>
@@ -44,21 +47,20 @@ export const handleBlog = async (c: Context) => {
         <details class="quick-draft">
             <summary>Quick draft</summary>
             
-            
-        <form style="margin-bottom: 3em;" method="POST">
-        <div style="margin-bottom:1em;">
-            <input type="text" id="post-title" name="post-title" hidden>
-        </div>
-        <div style="margin-bottom:1em;">
-            <textarea id="txt" name="post-content" placeholder="Quick draft..." rows=10></textarea>
+            <form style="margin-bottom: 3em;" method="POST">
+            <div style="margin-bottom:1em;">
+                <input type="text" id="post-title" name="post-title" hidden>
+            </div>
+            <div style="margin-bottom:1em;">
+                <textarea id="txt" name="post-content" placeholder="Quick draft..." rows=10></textarea>
 
-        </div>
-        <div class="buttons">
-            <input type="submit" name="action" value="Quick save">
-            <input type="submit" name="action" value="Continue editing in full">
-        </div>
+            </div>
+            <div class="buttons">
+                <input type="submit" name="action" value="Quick save">
+                <input type="submit" name="action" value="Continue editing in full">
+            </div>
 
-        </form>
+            </form>
         </details>
         `;
     }
@@ -94,7 +96,7 @@ export const handleBlogPOST = async (c: Context) => {
 
     if (!c.get('USER_LOGGED_IN')) return c.text('Unauthorized', 401);
 
-    // get mblog_id, user_id, feed_id for the given subdomain
+    // get blog_id, user_id, feed_id for the given subdomain
     const blogDBEntry = await c.env.DB.prepare('SELECT blogs.blog_id, blogs.user_id FROM blogs WHERE blogs.slug = ?')
         .bind(subdomain)
         .first();
@@ -103,34 +105,26 @@ export const handleBlogPOST = async (c: Context) => {
     const blog = blogDBEntry;
     if (userId !== blog.user_id) return c.text('Unauthorized', 401);
 
-    // ok, user is logged in and is the owner of the mblog
+    // ok, user is logged in and is the owner of the blog
     const body = await c.req.parseBody();
     let title = body['post-title'].toString();
     const postContent = body['post-content'].toString();
-    if (!postContent) return c.text('Post content is required');
 
-    if (!title.length) title = truncate(postContent, 45);
-    let postContentHTML = await marked.parse(postContent);
+    const newPostContent = postContent ? postContent : 'empty draft';
+
+    if (!title.length) title = truncate(newPostContent, 45);
+    let postContentHTML = await marked.parse(newPostContent);
     postContentHTML = await sanitizeHTML(postContentHTML);
 
     try {
         let item_slug = generate_slug(title);
 
-        // check if the slug already exists in mblog_items for this mblog
         const slug_check = await c.env.DB.prepare('SELECT * FROM posts WHERE blog_id = ? AND slug = ?')
             .bind(blog.blog_id, item_slug)
             .run();
+
         if (slug_check.results.length) {
-            for (let i = 2; i <= 11; i++) {
-                const new_slug = generate_slug(`${title}-${i}`);
-                const new_slug_check = await c.env.DB.prepare('SELECT * FROM posts WHERE blog_id = ? AND slug = ?')
-                    .bind(blog.mblog_id, new_slug)
-                    .run();
-                if (!new_slug_check.results.length) {
-                    item_slug = new_slug;
-                    break;
-                }
-            }
+            item_slug += `-${randomHash(8)}`;
             if (item_slug === generate_slug(title)) {
                 throw new Error('Unable to generate a unique slug after 10 attempts');
             }
@@ -139,10 +133,11 @@ export const handleBlogPOST = async (c: Context) => {
         const pub_date = new Date().toISOString();
 
         const status = body.action.toString().toLowerCase() === 'publish' ? 'public' : 'draft';
-        const insertion_results = await c.env.DB.prepare(
+
+        await c.env.DB.prepare(
             'INSERT INTO posts (blog_id, title, slug, content_md, content_html, pub_date, status) values (?, ?, ?, ?, ?, ?, ?)',
         )
-            .bind(blog.blog_id, title, item_slug, postContent, postContentHTML, pub_date, status)
+            .bind(blog.blog_id, title, item_slug, newPostContent, postContentHTML, pub_date, status)
             .run();
 
         if (body.action.toString().toLowerCase() === 'quick save') return c.redirect('/');
@@ -189,7 +184,7 @@ export const handlePostSingle = async (c: Context) => {
         </nav>
         <article>
             <header class="post-header">
-                <h1>${post.blog_title}</h1>
+                <h1>${post.title}</h1>
                 <time class="post-date">${post_date}</time>
             </header>
             <div class="post-content">
@@ -221,7 +216,7 @@ export const handlePostEditor = async (c: Context) => {
     const post_slug = c.req.param('post_slug');
 
     const post = await c.env.DB.prepare(`
-        SELECT posts.post_id, posts.title, posts.content_md, posts.content_html, blogs.user_id, blogs.title as blog_title
+        SELECT posts.post_id, posts.slug, posts.title, posts.content_md, posts.content_html, blogs.user_id, blogs.title as blog_title
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
         WHERE posts.slug = ?`)
@@ -230,14 +225,14 @@ export const handlePostEditor = async (c: Context) => {
 
     if (!c.get('USER_LOGGED_IN') || userId !== post.user_id) return c.text('Unauthorized', 401);
 
-    const list = renderPostEditor(post.title, post.content_md);
+    const list = renderPostEditor(post.title, post.content_md, post.slug);
 
     return c.html(renderHTML(`${post.title} | ${post.feed_title}`, raw(list), true, { footer: false }));
 };
 
 export const handlePostEditPOST = async (c: Context) => {
     const userId = c.get('USER_ID') || -1;
-    const postSlug = c.req.param('post_slug');
+    const postSlugExisting = c.req.param('post_slug');
 
     const postDBEntry = await c.env.DB.prepare(
         `
@@ -247,7 +242,7 @@ export const handlePostEditPOST = async (c: Context) => {
             WHERE posts.slug = ?
         `,
     )
-        .bind(postSlug)
+        .bind(postSlugExisting)
         .run();
 
     const post = postDBEntry.results[0];
@@ -257,12 +252,20 @@ export const handlePostEditPOST = async (c: Context) => {
 
     const body = await c.req.parseBody();
 
-    console.log(body);
-
     const postTitle = body['post-title'].toString();
     if (!postTitle) return c.text('Post title is required');
     const contentMD = body['post-content'].toString();
     if (!contentMD) return c.text('Post content is required');
+
+    const postSlug = body['post-slug'].toString().toLowerCase();
+    const newSlug = postSlug ? postSlug : postSlugExisting;
+    // TODO: this is bad, but it's a quick fix for now
+
+    // check if newSlug already exists
+    const postSlugExists = await c.env.DB.prepare('SELECT slug FROM posts WHERE slug = ? AND post_id != ?')
+        .bind(newSlug, post.post_id)
+        .first();
+    if (postSlugExists) return c.text('Post slug already exists');
 
     let contentHTML = await marked.parse(contentMD);
     contentHTML = await sanitizeHTML(contentHTML);
@@ -270,15 +273,15 @@ export const handlePostEditPOST = async (c: Context) => {
     const status = body.action.toString().toLowerCase() === 'publish' ? 'public' : 'draft';
 
     const results = await c.env.DB.prepare(
-        'UPDATE posts SET title = ?, content_md = ?, content_html = ?, status = ? WHERE post_id = ?',
+        'UPDATE posts SET title = ?, content_md = ?, content_html = ?, status = ?, slug = ? WHERE post_id = ?',
     )
-        .bind(postTitle, contentMD, contentHTML, status, post.post_id)
+        .bind(postTitle, contentMD, contentHTML, status, newSlug, post.post_id)
         .run();
 
-    return c.redirect(`/${postSlug}`);
+    return c.redirect(`/${newSlug}`);
 };
 
-export const handleMblogRss = async (c: Context) => {
+export const handleBlogRSS = async (c: Context) => {
     return c.html('RSS SOON');
 };
 
