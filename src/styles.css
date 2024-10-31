@@ -465,6 +465,12 @@ article tr:nth-child(even) {
     margin-bottom: 0;
 }
 
+.label-form {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+}
+
 .label {
     font-family: monospace;
     color: var(--text-secondary);

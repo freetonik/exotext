@@ -9,7 +9,7 @@ export const renderedCSS = raw(`
     --color-secondary: #666;
     --color-bg: #fcfcfc;
     --color-success: #2d503b;
-    --color-warning: #854c1d;
+    --color-warning: #851d27;
 
     --button-secondary-bg: #f2f2f2;
 
@@ -65,7 +65,6 @@ body {
     max-width: 900px;
     margin: 0 auto;
     padding: 3rem 2rem;
-    height: 100%;
 }
 
 .container-sm {
@@ -202,6 +201,27 @@ input[type="submit"].button-secondary:hover,
     opacity: 0.9;
 }
 
+.flash {
+    padding: 1rem;
+    text-align: center;
+    margin: 2rem 0;
+    background: var(--color-border);
+}
+
+.flash a {
+    color: inherit;
+    font-weight: bold;
+}
+
+.flash-success {
+    background: var(--color-success);
+    color: var(--code-bg);
+}
+
+.flash-warning {
+    background: var(--color-warning);
+    color: var(--code-bg);
+}
 
 
 .blog-description {
@@ -402,6 +422,8 @@ article tr:nth-child(even) {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1em;
+    align-items: stretch;
 }
 
 .post-status {
@@ -444,6 +466,12 @@ article tr:nth-child(even) {
 
 .info-row:last-child {
     margin-bottom: 0;
+}
+
+.label-form {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--secondary-text);
 }
 
 .label {
@@ -545,6 +573,16 @@ footer a {
 
     nav {
         margin-bottom: 4rem;
+    }
+
+    .post-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .post-date {
+        font-size: 0.85rem;
     }
 }
 `); 
