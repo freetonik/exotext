@@ -312,3 +312,7 @@ const generate_slug = (title: string) => {
         .replace(/[^a-zA-Z0-9-]/g, '-')
         .toLowerCase();
 };
+
+export const handleNewPost = async (c: Context) => {
+    return c.html('aaa');
+};
