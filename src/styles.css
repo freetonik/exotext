@@ -6,7 +6,7 @@
     --color-secondary: #666;
     --color-bg: #fcfcfc;
     --color-success: #2d503b;
-    --color-warning: #854c1d;
+    --color-warning: #851d27;
 
     --button-secondary-bg: #f2f2f2;
 
@@ -62,7 +62,6 @@ body {
     max-width: 900px;
     margin: 0 auto;
     padding: 3rem 2rem;
-    height: 100%;
 }
 
 .container-sm {
@@ -420,6 +419,8 @@ article tr:nth-child(even) {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1em;
+    align-items: stretch;
 }
 
 .post-status {

@@ -73,12 +73,13 @@ export const renderItemShort = (
     `;
 };
 
-export const renderPostEditor = (title = '', content = '') => {
+export const renderPostEditor = (title = '', content = '', slug = '') => {
     return `
     
     <script src="https://unpkg.com/tiny-markdown-editor@0.1.29/dist/tiny-mde.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.3/htmx.min.js" integrity="sha512-dQu3OKLMpRu85mW24LA1CUZG67BgLPR8Px3mcxmpdyijgl1UpCM1RtJoQP6h8UkufSnaHVRTUx98EQT9fcKohw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
+    <style>
+    .container { height:100%; padding: 1rem; }</style>
     <div class="editor-container">
 
     <form style="height: 100%; display: flex; flex-direction: column;" method="POST">
