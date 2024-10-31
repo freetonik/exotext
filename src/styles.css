@@ -199,6 +199,27 @@ input[type="submit"].button-secondary:hover,
     opacity: 0.9;
 }
 
+.flash {
+    padding: 1rem;
+    text-align: center;
+    margin: 2rem 0;
+    background: var(--color-border);
+}
+
+.flash a {
+    color: inherit;
+    font-weight: bold;
+}
+
+.flash-success {
+    background: var(--color-success);
+    color: var(--code-bg);
+}
+
+.flash-warning {
+    background: var(--color-warning);
+    color: var(--code-bg);
+}
 
 
 .blog-description {
