@@ -24,15 +24,13 @@ export const handleHomepage = async (c: Context) => {
         font-size: 1.2rem;
         margin-bottom: 3rem;
         max-width: 55ch;
-        color: #333;
     }
     .features {
-        border-top: 1px solid #ddd;
+        border-top: 1px solid var(--color-text);
         padding-top: 3rem;
         display: grid;
         grid-template-columns: 1fr;
         gap: 3rem;
-        color: #333;
     }
 
     .feature {
@@ -52,21 +50,19 @@ export const handleHomepage = async (c: Context) => {
         margin-bottom: 6rem;
         max-width: 400px;
     }    
+    .container{max-width: 680px;}
     </style>
-    
-    
-    <style>.container{max-width: 680px;}</style>
     <nav>
         <a href="/" class="logo">EXOTEXT</a>
         <div class="menu">
-        <a href="/login" class="blog-link">login</a>
+        <a href="/login" class="blog-link">sign in</a>
         <a href="/signup" class="blog-link">sign up</a>
         </div>
     </nav>
 
     <section class="intro">
-        <h1>A blogging platform focused on simplicity, typography, and craft.</h1>
-        <p class="lead">Exotext strips away the distractions of modern publishing platforms, creating a space where your writing can breathe and your readers can focus.</p>
+        <h1>A blogging platform<br>for the craft of clarity and focus.</h1>
+        <p class="lead">Exotext gets out of your way and lets you breath. A modern, minimalistic medium for your beautiful words.</p>
     </section>
 
     <section class="signup">
@@ -87,13 +83,13 @@ export const handleHomepage = async (c: Context) => {
             <p>No analytics. No social media integration. No unnecessary features. Just a clean canvas for your ideas.</p>
         </div>
         <div class="feature">
-            <h2>PHILOSOPHY</h2>
-            <p>Built on the belief that good writing needs space to develop, and good reading requires focus. Nothing more, nothing less.</p>
+            <h2>FREEDOM</h2>
+            <p>Use your custom domain. Export your data in Markdown and fully rendered HTML for easy migration.</p>
         </div>
     </section>
 
     <footer>
-        <p>Exotext by <a href="https://hypergraph.fi/">Hypergraph Labs</a></p>
+        <p>Made by <a href="https://hypergraph.fi/">Hypergraph Labs</a></p>
     </footer>
         `;
     return c.html(renderHTML('Exotext', raw(inner), c.get('USER_LOGGED_IN'), { footer: false }));

@@ -91,7 +91,7 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
         <div style="flex-grow: 1; height: 100%; display: flex; flex-direction: column;">
             <textarea id="txt" name="post-content" placeholder="Here we go..." rows=12>${content}</textarea>
             <div id="toolbar"></div>
-            <div id="tinymde" style="height:300px; overflow-y:scroll; border: 1px solid var(--color-border); background-color: white;padding:0.25em;flex-grow: 1;"></div>
+            <div id="tinymde" style="height:300px; overflow-y:scroll; border: 1px solid var(--color-border); padding:0.25em;flex-grow: 1;"></div>
         </div>
         <div id="uploadedImages">
         </div>
@@ -162,8 +162,8 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
         margin-top:1em;
     }
     .TinyMDE {
-        background-color:#fff;
-        color:#000;
+        background-color: var(--color-bg);
+        color: var(--color-text);
         font-size:16px;
         line-height:24px;
         outline: none;
@@ -356,7 +356,8 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
     }
 
     .TMCommandButton_Inactive {
-    background-color:#f8f8f8;
+    color: #a0a0a0;
+    ill: #a0a0a0;
     }
 
     .TMCommandButton_Disabled {

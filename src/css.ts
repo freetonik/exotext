@@ -24,12 +24,16 @@ export const renderedCSS = raw(`
     :root {
         --color-text: #e0e0e0;
         --color-secondary: #999;
-        --color-bg: #1a1a1a;
-        --color-border: #333;
+        --color-bg: #313030;
+        --color-success: #53be7e;
+        --color-warning: #851d27;
+
+        --button-secondary-bg: #252525;
+
+        --color-border: #ddd;
         --color-link: #ccc;
         --code-bg: #252525;
         --table-stripe: #222;
-        --button-secondary-bg: #252525;
     }
 
     .hljs {
@@ -61,6 +65,12 @@ body {
     height: 100%;
 }
 
+blockquote {
+    font-style: italic;
+    border-left: 2px solid var(--color-warning);
+    padding-left: 1em;
+}
+
 .container {
     max-width: 900px;
     margin: 0 auto;
@@ -88,6 +98,12 @@ body {
     resize: vertical;
     width: 100%;
     padding: 1em;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+.quick-draft form textarea:focus {
+    outline-color: var(--color-border);
 }
 
 .quick-draft .buttons {
@@ -184,8 +200,8 @@ input[type="submit"],
 button:hover,
 input[type="submit"]:hover,
 .button:hover {
-    /* opacity: 0.9; */
-    background-color: black;
+    opacity: 0.9;
+    /* background-color: var(--color-secondary); */
 }
 
 button.button-secondary,
@@ -225,7 +241,6 @@ input[type="submit"].button-secondary:hover,
 
 
 .blog-description {
-    color: #333;
     max-width: 55ch;
 }
 
@@ -250,7 +265,7 @@ input[type="submit"].button-secondary:hover,
 .post-date {
     font-family: monospace;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--color-secondary);
 }
 
 .post-title {
@@ -259,7 +274,7 @@ input[type="submit"].button-secondary:hover,
 }
 
 .post-item:hover .post-title {
-    color: #333;
+    color: var(--color-secondary);
 }
 
 .blog-link {
@@ -418,7 +433,7 @@ article tr:nth-child(even) {
 
 /* Publishing Controls */
 .publishing-controls {
-    margin-top: 2rem;
+    margin-top: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -481,7 +496,7 @@ article tr:nth-child(even) {
     padding: 0.2rem 0.5rem;
     border-radius: 3px;
     background: var(--color-border);
-    color: var(--color-text);
+    color: var(--color-secondary);
 }
 
 .label.label-inline {
@@ -536,7 +551,6 @@ footer {
     padding-top: 2rem;
     border-top: 1px solid #ddd;
     font-size: 0.9rem;
-    color: #666;
 }
 
 footer a {
