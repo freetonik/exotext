@@ -1,8 +1,3 @@
-```
-npm install
-npm run dev
-```
+# Exotext
 
-```
-npm run deploy
-```
+A blogging platform. In closed beta. **[exotext.com/](https://exotext.com/)**
