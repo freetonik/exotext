@@ -17,13 +17,14 @@ import {
 } from './account';
 import {
     handleBlog,
-    handleBlogPOST, // new blog post handler
+    handleBlogPOST,
+    handleBlogRSS, // new blog post handler
     handlePostDeletePOST,
     handlePostEditPOST,
     handlePostEditor,
     handlePostSingle,
 } from './blogs';
-import { handleHomepage } from './homepage';
+import { handleHomepage, handleWaitingListPOST } from './homepage';
 // import { handleAdmin } from './admin';
 import { renderHTML } from './htmltools';
 import {
@@ -49,11 +50,17 @@ app.use('/my/*', authRequiredMiddleware);
 app.use('/admin/*', adminRequiredMiddleware);
 
 const handleNotFound = (c: Context) => {
-    return c.html(renderHTML('404 | exotext', raw(`<div class="flash">Page not found.</div>`), c.get('USERNAME')));
+    return c.html(
+        renderHTML('404 | exotext', raw(`<div class="flash">Page not found.</div>`), c.get('USER_LOGGED_IN')),
+    );
 };
 
 const handleError = (err: Error, c: Context) => {
-    return c.html(renderHTML('Error | exotext', raw(`<div class="flash flash-red">${err}.</div>`), c.get('USERNAME')));
+    return c.html(
+        renderHTML('Error | exotext', raw(`<div class="flash flash-red">${err}.</div>`), c.get('USER_LOGGED_IN'), {
+            footer: false,
+        }),
+    );
 };
 
 app.notFound(handleNotFound);
@@ -61,6 +68,7 @@ app.onError(handleError);
 
 // APP ROUTES
 app.get('/', handleHomepage);
+app.post('/waiting_list', handleWaitingListPOST);
 
 // ADMIN ROUTES
 // app.get('/admin', handleAdmin);
@@ -96,7 +104,7 @@ subdomainApp.get('/', handleBlog);
 subdomainApp.post('/', authCheckMiddleware, handleBlogPOST);
 // subdomainApp.post('/upload', authCheckMiddleware, handleUploadImage);
 
-// subdomainApp.get('/rss', handleBlogRss);
+subdomainApp.get('/rss', handleBlogRSS);
 subdomainApp.get('/:post_slug', handlePostSingle);
 subdomainApp.get('/:post_slug/edit', authCheckMiddleware, handlePostEditor);
 subdomainApp.post('/:post_slug/edit', authCheckMiddleware, handlePostEditPOST);

@@ -49,33 +49,6 @@ export const handleMyAccount = async (c: Context) => {
     }
     listOfBlogs += '</div></section>';
 
-    let new_blog_form = '';
-    if (c.get('USER_IS_ADMIN')) {
-        new_blog_form = `
-        <div class="borderbox" style="margin-top: 1em;">
-            <form action="/my/account/create_blog" method="POST">
-                <div style="max-width:25em;margin:0;">
-                    <h2 style="margin-top: 0;">Create new blog</h2>
-                    <div style="margin-bottom:1em;">
-                        <label for="username">Address</label>
-                        <div style="display: flex; flex-wrap: wrap;    align-items: flex-end;">
-                        <input style="flex: 50%;" type="text" id="address" name="address" required />
-                        <span style="flex: 50%;"> .exotext.com</span>
-                        </div>
-
-                    </div>
-
-                    <div style="margin-bottom:1em;">
-                        <label for="username">Title</label>
-                        <input type="text" id="title" name="title" required />
-                    </div>
-
-                <input type="submit" value="Create">
-                </div>
-            </form>
-        </div>
-    `;
-    }
     const list = `
     <style>.container{max-width: 680px;}</style>
     <nav>
@@ -87,18 +60,18 @@ export const handleMyAccount = async (c: Context) => {
             <h1>My account</h1>
             <div class="account-info">
                 <div class="info-row">
-                    <span class="label">USERNAME</span>
+                    <span class="label-form">USERNAME</span>
                     <span class="value">${username}</span>
                 </div>
                 <div class="info-row">
-                    <span class="label">EMAIL</span>
+                    <span class="label-form">EMAIL</span>
                     <span class="value">
                         ${email}
                         ${verifiedOrNot}
                     </span>
                 </div>
                 <div class="info-row">
-                    <span class="label">MEMBER SINCE</span>
+                    <span class="label-form">MEMBER SINCE</span>
                     <span class="value">October 2024</span>
                 </div>
             </div>
@@ -114,7 +87,7 @@ export const handleMyAccount = async (c: Context) => {
 
 export const handleVerifyEmail = async (c: Context) => {
     const code = c.req.query('code');
-    const username = c.get('USERNAME');
+    const username = c.get('USER_LOGGED_IN');
     const result = await c.env.DB.prepare('SELECT * from email_verifications WHERE verification_code = ?')
         .bind(code)
         .run();
@@ -124,7 +97,7 @@ export const handleVerifyEmail = async (c: Context) => {
             renderHTML(
                 'Email verification | exotext',
                 raw(`<div class="flash flash-red">Email verification code is invalid or has been used already.</div>`),
-                username,
+                c.get('USER_LOGGED_IN'),
             ),
         );
     }
@@ -135,11 +108,13 @@ export const handleVerifyEmail = async (c: Context) => {
         c.env.DB.prepare('DELETE FROM email_verifications WHERE user_id = ?').bind(userId),
     ]);
 
-    const message_flash = username
-        ? `<div class="flash flash-blue">You can now go to <a href="/my">your feed</a>... Or contemplate life.</div>`
-        : `<div class="flash flash-blue">You can now <a href="/login">log in</a>.</div>`;
+    const message_flash = c.get('USER_LOGGED_IN')
+        ? `<div class="flash flash-success">You can now go to <a href="/my">your feed</a>... Or contemplate life.</div>`
+        : `<div class="flash flash-success">You can now <a href="/login">log in</a>.</div>`;
 
-    return c.html(renderHTML('Email verification | exotext', raw(message_flash), username));
+    return c.html(
+        renderHTML('Email verification | exotext', raw(message_flash), c.get('USER_LOGGED_IN'), { footer: false }),
+    );
 };
 
 export const handleResentVerificationEmailPOST = async (c: Context) => {
@@ -173,10 +148,10 @@ export const handleLogout = async (c: Context) => {
     return c.redirect('/');
 };
 
-export const handleLogin = async (c: Context) => {
-    if (c.get('USER_ID')) return c.redirect('/my');
-
-    const list = `
+const renderLoginForm = (email?: string, error?: string) => {
+    const emailValue = email ? email : '';
+    const errorMessage = error ? `<div class="flash flash-success">${error}</div>` : '';
+    return `
     <div class="container-sm service-page">
     <nav>
         <a href="/" class="logo">EXOTEXT</a>
@@ -187,8 +162,8 @@ export const handleLogin = async (c: Context) => {
 
         <form action="/login" method="POST">
             <div class="form-group">
-                <label for="text">USERNAME</label>
-                <input type="text" id="username" name="username" required>
+                <label for="email">EMAIL</label>
+                <input type="email" id="email" name="email" value="${emailValue}" required>
             </div>
 
             <div class="form-group">
@@ -197,6 +172,7 @@ export const handleLogin = async (c: Context) => {
             </div>
 
             <input type="submit" value="Sign in">
+            ${errorMessage}
 
             <div class="links">
                 <a href="/reset_password">Forgot your password?</a>
@@ -207,7 +183,12 @@ export const handleLogin = async (c: Context) => {
     </div>
 
     `;
-    return c.html(renderHTML('Login or create account | exotext', raw(list), false, { footer: false }));
+};
+
+export const handleLogin = async (c: Context) => {
+    if (c.get('USER_ID')) return c.redirect('/my');
+
+    return c.html(renderHTML('Login or create account | exotext', raw(renderLoginForm()), false, { footer: false }));
 };
 
 export const handleResetPassword = async (c: Context) => {
@@ -221,7 +202,7 @@ export const handleResetPassword = async (c: Context) => {
 
         inner = `
             <div style="max-width:25em;margin:auto;">
-                <div class="borderbox">
+                <div>
                     <h2 style="margin-top:0;">Set new password</h2>
                     <form action="/set_password" method="POST">
                         <div style="margin-bottom:2em;">
@@ -271,6 +252,7 @@ export const handleResetPassword = async (c: Context) => {
 
 export const handleResetPasswordPOST = async (c: Context) => {
     const body = await c.req.parseBody();
+    console.log(body);
     const email = body.email.toString().toLowerCase();
 
     if (!email) throw new Error('Email is required');
@@ -292,10 +274,11 @@ export const handleResetPasswordPOST = async (c: Context) => {
     return c.html(
         renderHTML(
             'Password reset | exotext',
-            raw(`<div class="flash flash-blue">
+            raw(`<div class="flash">
                 If the email address you entered is associated with an account, you will receive an email with a link to reset your password.
             </div>`),
             false,
+            { footer: false },
         ),
     );
 };
@@ -331,10 +314,10 @@ export const handleSetPasswordPOST = async (c: Context) => {
     ]);
 
     const inner = raw(
-        `<div class="flash flash-blue">Password reset successfully. <a href="/login">Log in now</a>.</div>`,
+        `<div class="flash flash-success">Password reset successfully. <a href="/login">Log in now</a>.</div>`,
     );
 
-    return c.html(renderHTML('Reset password | exotext', inner, false));
+    return c.html(renderHTML('Reset password | exotext', inner, false, { footer: false }));
 };
 
 export const handleSignup = async (c: Context) => {
@@ -426,28 +409,42 @@ export const handleSignup = async (c: Context) => {
 
 export const handleLoginPOST = async (c: Context) => {
     const body = await c.req.parseBody();
-    const username = body.username.toString();
+    const email = body.email.toString();
     const attempted_password = body.password.toString();
 
-    if (!username || !attempted_password) {
-        throw new Error('Username and password are required');
+    if (!email || !attempted_password) {
+        return c.html(
+            renderHTML(
+                'Login or create account | exotext',
+                raw(renderLoginForm(email, 'Username and password are required')),
+                false,
+                { footer: false },
+            ),
+        );
     }
 
-    const user = await c.env.DB.prepare('SELECT * FROM users WHERE users.username = ?').bind(username).first();
+    const user = await c.env.DB.prepare('SELECT * FROM users WHERE users.email = ?').bind(email).first();
     if (!user) {
         // though user may not exist, we should not leak this information
-        throw new Error('Wrong username or password');
+        return c.html(
+            renderHTML(
+                'Login or create account | exotext',
+                raw(renderLoginForm(email, 'Wrong email or password')),
+                false,
+                { footer: false },
+            ),
+        );
     }
 
     const verified = await verifyPassword(user.password_hash, user.password_salt, attempted_password);
     if (verified) {
         try {
-            return await createSessionSetCookieAndRedirect(c, user.user_id, user.username);
+            return await createSessionSetCookieAndRedirect(c, user.user_id, user.email);
         } catch (err) {
             throw new Error('Something went horribly wrong.');
         }
     }
-    throw new Error('Wrong username or password');
+    throw new Error('Something went horribly wrong.');
 };
 
 export const handleSignupPOST = async (c: Context) => {
@@ -457,7 +454,10 @@ export const handleSignupPOST = async (c: Context) => {
     const email = body.email.toString().toLowerCase();
     const invitation_code = body.invitation_code.toString();
 
-    if (invitation_code !== 'ARUEHW') throw new Error('Invalid invitation code');
+    const invitationCodes = c.env.INVITATION_CODES.split(',');
+
+    // if invitation code is not one of valid ones, throw error
+    if (!invitationCodes.includes(invitation_code)) throw new Error('Invalid invitation code');
 
     if (!checkUsername(username)) throw new Error('Invalid username');
     if (password.length < 8) throw new Error('Password too short');
@@ -528,12 +528,12 @@ const send_password_reset_link = async (env: Bindings, email: string, password_r
 const createSessionSetCookieAndRedirect = async (
     c: Context,
     userId: number,
-    username: string,
+    email: string,
     redirectTo = '/',
     first_login = false,
 ) => {
     const sessionKey = randomHash(32);
-    const kv_value = `${userId};${username}`;
+    const kv_value = `${userId};${email}`;
     await c.env.SESSIONS_KV.put(sessionKey, kv_value);
     setCookie(c, 'exotext_session', sessionKey, {
         path: '/',
@@ -547,7 +547,7 @@ const createSessionSetCookieAndRedirect = async (
         return c.html(
             renderHTML(
                 'Account created | exotext',
-                raw(`<div class="flash flash-blue">
+                raw(`<div class="flash">
                     Great! You are now registered and logged in. Check your email for a verification link. </div>`),
                 true,
             ),
@@ -557,7 +557,7 @@ const createSessionSetCookieAndRedirect = async (
     return c.redirect(redirectTo);
 };
 
-function randomHash(len: number): string {
+export function randomHash(len: number): string {
     return Array.from(crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2))), (b) =>
         `0${(b & 0xff).toString(16)}`.slice(-2),
     ).join('');

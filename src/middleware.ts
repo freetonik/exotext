@@ -9,7 +9,7 @@ export async function authCheckMiddleware(c: Context, next) {
         if (kv_value != null) {
             const values = kv_value.split(';');
             c.set('USER_ID', Number.parseInt(values[0]));
-            c.set('USERNAME', values[1]);
+            c.set('EMAIL', values[1]);
             c.set('USER_LOGGED_IN', true);
             c.set('USER_IS_ADMIN', values[0] === '1');
             // TODO: upsert KV only when key is expiring soon
