@@ -97,13 +97,10 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
         </div>
 
         <div class="publishing-controls">
-            <div class="markdown-help">
-                :-)
-            </div>
+            <input id="post-slug" name="post-slug" type="text" placeholder="slug" value="${slug}">
             <div class="buttons">
+                <input class="button-secondary" type="submit" name="action" value="Save">
                 <input type="submit" name="action" value="Publish">
-                <input type="submit" name="action" value="Save">
-                    
             </div>
         </div>
 
