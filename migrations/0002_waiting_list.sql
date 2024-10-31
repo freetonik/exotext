@@ -1,0 +1,7 @@
+-- Migration number: 0002 	 2024-10-30T16:47:53.079Z
+
+CREATE TABLE IF NOT EXISTS waiting_list (
+    id INTEGER PRIMARY KEY,
+    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    email TEXT
+);

@@ -1,5 +1,6 @@
 import type { Context } from 'hono';
 import { raw } from 'hono/html';
+import { sendEmail } from './email';
 import { renderHTML } from './htmltools';
 
 export const handleHomepage = async (c: Context) => {
@@ -69,8 +70,11 @@ export const handleHomepage = async (c: Context) => {
     </section>
 
     <section class="signup">
-        <input class="form-group" type="email" placeholder="your@email.com" required>
-        <button type="submit">Join waiting list</button>
+        <form action="/waiting_list" method="POST">
+            <input class="form-group" type="email" id="email" name="email" placeholder="your@email.com" required>
+            <button type="submit">Join waiting list</button>
+        </form>
+        
     </section>
 
     <section class="features">
@@ -93,4 +97,42 @@ export const handleHomepage = async (c: Context) => {
     </footer>
         `;
     return c.html(renderHTML('Exotext', raw(inner), c.get('USER_LOGGED_IN'), { footer: false }));
+};
+
+export const handleWaitingListPOST = async (c: Context) => {
+    const body = await c.req.parseBody();
+    console.log('body', body);
+    const email = body.email.toString().toLowerCase();
+
+    if (!email) {
+        throw new Error('No email provided');
+    }
+
+    // check if email is already in the waiting list
+    const existing = await c.env.DB.prepare('SELECT * FROM waiting_list WHERE email = ?').bind(email).first();
+    if (existing) {
+        throw new Error('You are already on the waiting list');
+    }
+
+    try {
+        await c.env.DB.prepare('INSERT INTO waiting_list (email) values (?)').bind(email).run();
+    } catch (e) {
+        throw new Error('Something went wrong. Please try again later.');
+    }
+
+    const emailBody =
+        '<p>Thank you for your interest. You are now on the waiting list for Exotext. You will get an invitation email soon.</p><p>Send me an message to <a href="mailto:hello@rakhim.org">hello@rakhim.org</a> if you have any questions or if you want to suggest ideas for the development of Exotext.</p><p>— Cheers,<br>Rakhim.</p>';
+
+    await sendEmail(c.env, email, 'Exotext waiting list', emailBody);
+
+    return c.html(
+        renderHTML(
+            'You are in!',
+            raw(
+                `<div class="flash flash-success">You are now on the waiting list. You'll get one email now, and the invitation email when it's your turn to enjoy Exotext. And you will enjoy it. YOU. WILL.</div>`,
+            ),
+            false,
+            { footer: false },
+        ),
+    );
 };
