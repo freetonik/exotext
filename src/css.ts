@@ -2,7 +2,8 @@
 import { raw } from 'hono/html';
 export const renderedCSS = raw(`
 :root {
-    --font-sans: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    --font-serif: "IBM Plex Serif", serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
     --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 
     --color-text: #2c353d;
@@ -57,7 +58,7 @@ html {
 }
 
 body {
-    font-family: var(--font-sans);
+    font-family: var(--font-serif);
     line-height: 1.6;
     color: var(--color-text);
     background: var(--color-bg);
