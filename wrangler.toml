@@ -5,7 +5,7 @@ compatibility_date = "2024-10-22"
 
 routes = [
   { pattern = "exotext.com", custom_domain = true },
-  { pattern = "*minifeed.net/*", zone_name = "minifeed.net" }
+  { pattern = "*exotext.net/*", zone_name = "exotext.com" }
 ]
 
 [placement]
