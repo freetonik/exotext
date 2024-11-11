@@ -1,5 +1,5 @@
 :root {
-    --font-serif: "IBM Plex Serif", serif;
+    --font-serif: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
     --font-sans: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
     --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 
@@ -407,7 +407,6 @@ article tr:nth-child(even) {
 
 /* Title Input */
 .title-input {
-    margin-bottom: 2rem;
     width: 100%;
 }
 
@@ -596,4 +595,14 @@ footer a {
     .post-date {
         font-size: 0.85rem;
     }
+}
+
+/* EDITOR */
+
+.CodeMirror {
+    height: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    padding: 0.5em;
 }

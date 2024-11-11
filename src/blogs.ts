@@ -2,7 +2,8 @@ import type { Context } from 'hono';
 import { raw } from 'hono/html';
 import { marked } from 'marked';
 import { randomHash } from './account';
-import { renderHTML, renderPostEditor } from './htmltools';
+import { renderPostEditor } from './editor';
+import { renderHTML } from './htmltools';
 import { sanitizeHTML, truncate } from './utils';
 
 export const handleBlog = async (c: Context) => {
@@ -32,17 +33,17 @@ export const handleBlog = async (c: Context) => {
     let list = `
         <header class="blog-header">
             <h1>${blog.title}</h1>
-            
+
             <p class="blog-description">Observations on technology, literature, and the spaces between. Written sporadically, with care.</p>
         </header>
-        
+
     `;
 
     if (userLoggedIn && userId === blog.user_id) {
         list += `
         <details class="quick-draft">
             <summary>Quick draft</summary>
-            
+
             <form style="margin-bottom: 3em;" method="POST">
             <div style="margin-bottom:1em;">
                 <input type="text" id="post-title" name="post-title" hidden>
@@ -174,7 +175,7 @@ export const handlePostSingle = async (c: Context) => {
     const post_date = new Date(post.pub_date).toLocaleDateString('en-UK', date_format_opts);
 
     let list = `
-    
+
         <nav>
             <a href="/" class="blog-link">← ${post.blog_title}</a>
         </nav>
@@ -221,8 +222,7 @@ export const handlePostEditor = async (c: Context) => {
 
     if (!c.get('USER_LOGGED_IN') || userId !== post.user_id) return c.text('Unauthorized', 401);
 
-    const list = renderPostEditor(post.title, post.content_md, post.slug);
-
+    return c.html(renderPostEditor(post.title, post.content_md, post.slug));
     return c.html(renderHTML(`${post.title} | ${post.feed_title}`, raw(list), true, { footer: false }));
 };
 

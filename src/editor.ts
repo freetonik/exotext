@@ -1,0 +1,190 @@
+import { renderedCSS } from './css';
+
+export const renderPostEditor = (title = '', content = '', slug = '') => {
+    return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>${title}</title>
+        <meta name="description" content="${title}">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBkPSJtMTIuNjcyLjY2OCAzLjA1OSA2LjE5NyA2LjgzOC45OTNhLjc1Ljc1IDAgMCAxIC40MTYgMS4yOGwtNC45NDggNC44MjMgMS4xNjggNi44MTJhLjc1Ljc1IDAgMCAxLTEuMDg4Ljc5TDEyIDE4LjM0N2wtNi4xMTYgMy4yMTZhLjc1Ljc1IDAgMCAxLTEuMDg4LS43OTFsMS4xNjgtNi44MTEtNC45NDgtNC44MjNhLjc0OS43NDkgMCAwIDEgLjQxNi0xLjI3OWw2LjgzOC0uOTk0TDExLjMyNy42NjhhLjc1Ljc1IDAgMCAxIDEuMzQ1IDBaIj48L3BhdGg+PC9zdmc+" />
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+
+        <style>${renderedCSS}</style>
+    </head>
+    <body>
+    <div style="height: 100%; padding: 1rem; display: flex; flex-direction: column;max-width: 900px; margin: 0 auto;">
+
+    <form style="height: 100%; display: flex; flex-direction: column;" method="POST">
+
+        <div class="title-input">
+            <input id="post-title" name="post-title" type="text" placeholder="Post title" value="${title}">
+        </div>
+
+        <div style="flex-grow: 1; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+            <textarea id="editor" name="post-content" placeholder="Here we go..." rows=12>${content}</textarea>
+        </div>
+
+    <div id="uploadedImages">    </div>
+
+    <div class="publishing-controls">
+        <input id="post-slug" name="post-slug" type="text" placeholder="slug" value="${slug}">
+        <div class="buttons">
+            <input class="button-secondary" type="submit" name="action" value="Save">
+            <input type="submit" name="action" value="Publish">
+        </div>
+    </div>
+
+    </form>
+    </div>
+
+    <script>
+        // Initialize CodeMirror
+        const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+            mode: 'markdown',
+            theme: 'default',
+            tabSize: 2,
+            autofocus: true,
+
+            lineWrapping: true,
+            lineNumbers: false,
+            extraKeys: {
+                'Cmd-B': handleBoldToggle,
+                'Ctrl-B': handleBoldToggle,
+                'Cmd-I': handleItalicToggle,
+                'Ctrl-I': handleItalicToggle
+            }
+        });
+
+        // Helper function to check if text contains markdown markers
+        function hasMarkdownMarkers(text, markers) {
+            return text.startsWith(markers) && text.endsWith(markers);
+        }
+
+        // Helper function to remove markdown markers
+        function removeMarkdownMarkers(text, markers) {
+            if (hasMarkdownMarkers(text, markers)) {
+                return text.slice(markers.length, -markers.length);
+            }
+            return text;
+        }
+
+        // Helper function to surround text with markers
+        function surroundSelection(cm, markers, keepSelection = true) {
+            const selection = cm.getSelection();
+            const from = cm.getCursor('from');
+            const to = cm.getCursor('to');
+
+            // Get the full line content to check for existing markers
+            const line = cm.getLine(from.line);
+            const selectionStart = from.ch;
+            const selectionEnd = to.line === from.line ? to.ch : line.length;
+
+            // Check if selection already has markers
+            if (hasMarkdownMarkers(selection, markers)) {
+                // Remove markers from the selection itself
+                const newText = removeMarkdownMarkers(selection, markers);
+                cm.replaceSelection(newText);
+            } else {
+                // Check if selection is part of a larger marked text
+                let startSearch = Math.max(0, selectionStart - markers.length);
+                let endSearch = Math.min(line.length, selectionEnd + markers.length);
+                let surroundingText = line.substring(startSearch, endSearch);
+
+                let markersBefore = surroundingText.substring(0, markers.length) === markers;
+                let markersAfter = surroundingText.substring(surroundingText.length - markers.length) === markers;
+
+                if (markersBefore && markersAfter) {
+                    // Remove markers from the larger text
+                    let newStart = from.ch - markers.length;
+                    let newEnd = to.ch + markers.length;
+                    if (newStart >= 0 && newEnd <= line.length) {
+                        cm.replaceRange(selection,
+                            {line: from.line, ch: newStart},
+                            {line: to.line, ch: newEnd}
+                        );
+                    }
+                } else {
+                    // Add new markers
+                    cm.replaceSelection(markers + selection + markers);
+                    if (keepSelection) {
+                        cm.setSelection(
+                            {line: from.line, ch: from.ch + markers.length},
+                            {line: to.line, ch: to.ch + markers.length}
+                        );
+                    }
+                }
+            }
+        }
+
+        // Handle bold toggle
+        function handleBoldToggle(cm) {
+            surroundSelection(cm, '**', true);
+        }
+
+        // Handle italic toggle
+        function handleItalicToggle(cm) {
+            surroundSelection(cm, '_', true);
+        }
+
+        // Mock function to simulate image upload to server
+        function mockImageUpload(file) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const mockUrl = 'https://example.com/images/FILENAME';
+                    resolve(mockUrl);
+                }, 500);
+            });
+        }
+
+        // Handle paste event
+        editor.on('paste', (cm, e) => {
+            // Check if there's a selection
+            if (cm.somethingSelected()) {
+                const selection = cm.getSelection();
+
+                // Get clipboard data
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const pastedText = clipboardData.getData('text');
+
+                // Check if pasted text is a URL starting with http
+                if (pastedText.trim().toLowerCase().startsWith('http')) {
+                    e.preventDefault();
+                    cm.replaceSelection('[' + selection + '](' + pastedText + ')');
+                }
+            }
+        });
+
+        // Handle drag and drop
+        editor.on('drop', async (cm, event) => {
+            event.preventDefault();
+
+            const file = event.dataTransfer.files[0];
+            if (!file || !file.type.startsWith('image/')) {
+                return;
+            }
+
+            try {
+                const imageUrl = await mockImageUpload(file);
+                const imageMarkdown = '![' + file.name + ']' + '(' + imageUrl + ')';
+                cm.replaceRange(imageMarkdown, cm.getCursor());
+            } catch (error) {
+                console.error('Error uploading image:', error);
+            }
+        });
+
+        // Prevent default drag over behavior
+        editor.on('dragover', (cm, event) => {
+            event.preventDefault();
+        });
+
+    </script>
+    </body>
+    </html>
+    `;
+};
