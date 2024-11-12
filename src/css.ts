@@ -585,7 +585,8 @@ footer a {
     font-size: .8rem;
 }
 
-.editor-container input[type="submit"] {
+.editor-container input[type="submit"],
+.editor-container .button {
     padding: 0.5rem 1rem;
     font-size: .8rem;
     letter-spacing: 0;
@@ -631,5 +632,32 @@ footer a {
     border-radius: 4px;
     font-size: 16px;
     padding: 0.5em;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+    background-color: var(--color-bg);
+    overflow-y: auto;
+    border: 3px dashed var(--color-warning);
+}
+
+.close-button {
+    position: fixed;
+    top: 1em;
+    right: 2em;
+    z-index: 1001;
+}
+
+
+.preview-content {
+    padding: 40px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 `); 

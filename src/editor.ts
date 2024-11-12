@@ -1,6 +1,6 @@
 import { renderedCSS } from './css';
 
-export const renderPostEditor = (title = '', content = '', slug = '') => {
+export const renderPostEditor = (title = '', content = '', slug = '', blog_title = '') => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -14,7 +14,10 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
         <style>${renderedCSS}</style>
     </head>
@@ -35,13 +38,18 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
         <div class="publishing-controls">
             <input id="post-slug" name="post-slug" type="text" placeholder="slug" value="${slug}">
             <div class="buttons">
-                <input class="button-secondary" type="submit" name="action" value="Preview">
+                <a class="button button-secondary" href="#" id="preview-link">Preview</a>
                 <input class="button-secondary" type="submit" name="action" value="Save as draft">
                 <input type="submit" name="action" value="Publish">
             </div>
         </div>
 
         </form>
+    </div>
+
+    <div id="preview-overlay" class="overlay">
+        <button class="close-button" id="close-preview">Close preview (ESC)</button>
+        <div class="preview-content" id="preview-content"></div>
     </div>
 
     <script>
@@ -191,6 +199,65 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
             event.preventDefault();
         });
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const previewLink = document.getElementById('preview-link');
+            const overlay = document.getElementById('preview-overlay');
+            const closeButton = document.getElementById('close-preview');
+            const previewContent = document.getElementById('preview-content');
+
+
+            // Function to close overlay
+            const closeOverlay = () => {
+                overlay.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            };
+
+            // Function to open overlay
+            const openOverlay = () => {
+                overlay.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            };
+
+            // Preview link click handler
+            previewLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                try {
+                    const response = await fetch('preview', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            "post-title": document.getElementById('post-title').value,
+                            "post-content": editor.getValue(),
+                            "blog-title": "${blog_title}"
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Preview request failed');
+                    }
+
+                    const html = await response.text();
+                    previewContent.innerHTML = html;
+                    openOverlay();
+                } catch (error) {
+                    console.error('Preview error:', error);
+                    alert('Failed to generate preview');
+                }
+            });
+
+            // Close button click handler
+            closeButton.addEventListener('click', closeOverlay);
+
+            // Escape key handler
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && overlay.style.display === 'block') {
+                    closeOverlay();
+                }
+            });
+        });
     </script>
     </body>
     </html>

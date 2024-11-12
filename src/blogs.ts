@@ -196,7 +196,8 @@ export const handlePostSingle = async (c: Context) => {
             </header>
             <div class="post-content">
             ${post.content_html}
-            </div>
+            </div
+        </article>
 
         `;
 
@@ -232,8 +233,7 @@ export const handlePostEditor = async (c: Context) => {
 
     if (!c.get('USER_LOGGED_IN') || userId !== post.user_id) return c.text('Unauthorized', 401);
 
-    return c.html(renderPostEditor(post.title, post.content_md, post.slug));
-    return c.html(renderHTML(`${post.title} | ${post.feed_title}`, raw(list), true, { footer: false }));
+    return c.html(renderPostEditor(post.title, post.content_md, post.slug, post.blog_title));
 };
 
 export const handlePostEditPOST = async (c: Context) => {
@@ -310,6 +310,49 @@ export const handlePostDeletePOST = async (c: Context) => {
     await c.env.DB.prepare('DELETE FROM posts WHERE post_id = ?').bind(post.post_id).run();
 
     return c.redirect('/');
+};
+
+interface PreviewRequest {
+    'post-title': string;
+    'post-content': string;
+    'blog-title': string;
+}
+
+export const handlePostPreviewPOST = async (c: Context) => {
+    const body = await c.req.json<PreviewRequest>();
+
+    const postTitle = body['post-title'].toString();
+    if (!postTitle) return c.text('Post title is required');
+    const contentMD = body['post-content'].toString();
+    if (!contentMD) return c.text('Post content is required');
+
+    const date_format_opts: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+    };
+    const postDate = new Date(new Date()).toLocaleDateString('en-UK', date_format_opts);
+
+    const contentHTML = await markdownToHTML(contentMD);
+    const result = `
+    <nav>
+        <a href="/" class="blog-link">← ${body['blog-title']}</a>
+    </nav>
+    <article>
+        <header class="post-header">
+            <h1>${postTitle}</h1>
+            <small class="label label-red">unsaved preview</small> <time class="post-date">${postDate}</time>
+        </header>
+        <div class="post-content">
+        ${contentHTML}
+        </div
+    </article>
+
+    `;
+    return c.html(result);
 };
 
 // UTILS
