@@ -3,6 +3,7 @@ import type { Context } from 'hono';
 import { raw } from 'hono/html';
 import { Marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
+import markedKatex from 'marked-katex-extension';
 import { randomHash } from './account';
 import { renderPostEditor } from './editor';
 import { renderHTML } from './htmltools';
@@ -336,6 +337,11 @@ export const markdownToHTML = async (mdContent: string) => {
             },
         }),
     );
+    const options = {
+        throwOnError: false,
+    };
+
+    marked.use(markedKatex(options));
 
     const postContentHTML = await marked.parse(mdContent);
     return await sanitizeHTML(postContentHTML);
