@@ -30,8 +30,6 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
             <textarea id="editor" name="post-content" placeholder="Here we go..." rows=12>${content}</textarea>
         </div>
 
-    <div id="uploadedImages">    </div>
-
     <div class="publishing-controls">
         <input id="post-slug" name="post-slug" type="text" placeholder="slug" value="${slug}">
         <div class="buttons">
@@ -132,16 +130,6 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
             surroundSelection(cm, '_', true);
         }
 
-        // Mock function to simulate image upload to server
-        function mockImageUpload(file) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const mockUrl = 'https://example.com/images/FILENAME';
-                    resolve(mockUrl);
-                }, 500);
-            });
-        }
-
         // Handle paste event
         editor.on('paste', (cm, e) => {
             // Check if there's a selection
@@ -170,9 +158,26 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
             }
 
             try {
-                const imageUrl = await mockImageUpload(file);
-                const imageMarkdown = '![' + file.name + ']' + '(' + imageUrl + ')';
-                cm.replaceRange(imageMarkdown, cm.getCursor());
+
+                let formData = new FormData();
+                formData.append("image", file);
+                console.log(formData);
+
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                const res1 = await response;
+                console.log(res1);
+                result = await response.json();
+                console.log(result);
+
+                if (result.imageUrl) {
+                    const imageMarkdown = '![]' + '(' + result.imageUrl + ')';
+                    cm.replaceRange(imageMarkdown, cm.getCursor());
+                } else {
+                    cm.replaceRange(result.error, cm.getCursor());
+                    codeElement.textContent = result.error;
+                }
+
+
             } catch (error) {
                 console.error('Error uploading image:', error);
             }

@@ -27,6 +27,10 @@ binding = "SESSIONS_KV"
 id = "bda520fade10435b8cecf65b3af9e799"
 preview_id = "90c4c44b69f14a21b4cc0fefef1f3bb6"
 
+[[r2_buckets]]
+binding = 'IMG_BUCKET'
+bucket_name = 'exotext-img'
+
 # Automatically place your workloads in an optimal location to minimize latency.
 # If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
 # rather than the end user may result in better performance.

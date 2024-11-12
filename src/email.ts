@@ -1,8 +1,7 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import type { Bindings } from './bindings';
 
 export const sendEmail = async (
-    env: Bindings,
+    env: CloudflareBindings,
     to: string,
     subject: string,
     body: string,

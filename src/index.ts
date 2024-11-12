@@ -34,6 +34,7 @@ import {
     authRequiredMiddleware,
     subdomainMiddleware,
 } from './middleware';
+import { handleUploadImage } from './upload';
 
 // ————————————————————————————————————————————————————————————————>>>>
 
@@ -104,7 +105,7 @@ subdomainApp.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 subdomainApp.get('/', handleBlog);
 subdomainApp.get('/~new', handleNewPost);
 subdomainApp.post('/', handleBlogPOST);
-// subdomainApp.post('/upload', handleUploadImage);
+subdomainApp.post('/upload', handleUploadImage);
 
 subdomainApp.get('/rss', handleBlogRSS);
 subdomainApp.get('/:post_slug', handlePostSingle);

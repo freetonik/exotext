@@ -1,7 +1,6 @@
 import type { Context } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { raw } from 'hono/html';
-import type { Bindings } from './bindings';
 import { sendEmail } from './email';
 import { renderHTML } from './htmltools';
 
@@ -77,7 +76,7 @@ export const handleMyAccount = async (c: Context) => {
             </div>
 
     ${listOfBlogs}
-    
+
     <div class="button-group">
          <a class="button" href="/logout">Log out</a>
     </div>`;
@@ -378,7 +377,7 @@ export const handleSignup = async (c: Context) => {
 
             <div class="form-group">
                 <label for="slug">BLOG URL</label>
-                <input type="text" id="slug" name="slug" required 
+                <input type="text" id="slug" name="slug" required
                         pattern="[a-zA-Z0-9-]+" title="Only letters, numbers, and hyphens are allowed">
                 <div class="blog-url-preview">.exotext.com</div>
             </div>
@@ -505,7 +504,7 @@ export const handleSignupPOST = async (c: Context) => {
 };
 
 const sendEmailVerificationLink = async (
-    env: Bindings,
+    env: CloudflareBindings,
     username: string,
     email: string,
     email_verification_code: string,
@@ -517,7 +516,7 @@ const sendEmailVerificationLink = async (
     await sendEmail(env, email, 'Welcome to exotext', emailBody);
 };
 
-const send_password_reset_link = async (env: Bindings, email: string, password_reset_code: string) => {
+const send_password_reset_link = async (env: CloudflareBindings, email: string, password_reset_code: string) => {
     const passwordResetLink = `${env.ENVIRONMENT === 'dev' ? 'http://localhost:8183' : 'https://exotext.com'}/reset_password?code=${password_reset_code}`;
 
     const emailBody = `You have requested to reset your password for your exotext account. If you did not request it, please ignore this email. Otherwise, please click on <strong><a href="${passwordResetLink}">this link</a></strong> to reset your password.`;
