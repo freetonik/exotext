@@ -15,30 +15,33 @@ export const renderPostEditor = (title = '', content = '', slug = '') => {
         <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
 
+
         <style>${renderedCSS}</style>
     </head>
     <body>
-    <div style="height: 100%; padding: 1rem; display: flex; flex-direction: column;max-width: 900px; margin: 0 auto;">
 
-    <form style="height: 100%; display: flex; flex-direction: column;" method="POST">
+    <div class="editor-container">
 
-        <div class="title-input">
-            <input id="post-title" name="post-title" type="text" placeholder="Post title" value="${title}">
+        <form style="height: 100%; display: flex; flex-direction: column;" method="POST">
+
+            <div class="title-input">
+                <input id="post-title" name="post-title" type="text" placeholder="Post title" value="${title}">
+            </div>
+
+            <div style="flex-grow: 1; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+                <textarea id="editor" name="post-content" placeholder="Here we go..." rows=12>${content}</textarea>
+            </div>
+
+        <div class="publishing-controls">
+            <input id="post-slug" name="post-slug" type="text" placeholder="slug" value="${slug}">
+            <div class="buttons">
+                <input class="button-secondary" type="submit" name="action" value="Preview">
+                <input class="button-secondary" type="submit" name="action" value="Save as draft">
+                <input type="submit" name="action" value="Publish">
+            </div>
         </div>
 
-        <div style="flex-grow: 1; height: 100%; display: flex; flex-direction: column; overflow: hidden;">
-            <textarea id="editor" name="post-content" placeholder="Here we go..." rows=12>${content}</textarea>
-        </div>
-
-    <div class="publishing-controls">
-        <input id="post-slug" name="post-slug" type="text" placeholder="slug" value="${slug}">
-        <div class="buttons">
-            <input class="button-secondary" type="submit" name="action" value="Save">
-            <input type="submit" name="action" value="Publish">
-        </div>
-    </div>
-
-    </form>
+        </form>
     </div>
 
     <script>

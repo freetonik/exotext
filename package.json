@@ -8,13 +8,15 @@
         "watch-css": "node watcher.js"
     },
     "dependencies": {
-        "hono": "^4.6.7",
         "@aws-sdk/client-ses": "^3.668.0",
-        "marked": "^14.1.2"
+        "highlight.js": "^11.10.0",
+        "hono": "^4.6.7",
+        "marked": "^14.1.2",
+        "marked-highlight": "^2.2.1"
     },
     "devDependencies": {
+        "@biomejs/biome": "1.9.3",
         "@cloudflare/workers-types": "^4.20241022.0",
-        "wrangler": "^3.79.0",
-        "@biomejs/biome": "1.9.3"
+        "wrangler": "^3.79.0"
     }
 }

@@ -46,9 +46,7 @@ const app = new Hono<{ Bindings: CloudflareBindings }>({
 app.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
 app.use('*', authCheckMiddleware);
-// all routes below this line require authentication
 app.use('/my/*', authRequiredMiddleware);
-// all routes below this line require admin privileges
 app.use('/admin/*', adminRequiredMiddleware);
 
 const handleNotFound = (c: Context) => {

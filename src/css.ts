@@ -349,7 +349,6 @@ article li+li {
 
 /* Code */
 article pre {
-    padding: 1.5rem;
     background: var(--code-bg);
     overflow-x: auto;
     border: 1px solid var(--color-border);
@@ -408,38 +407,7 @@ article tr:nth-child(even) {
     background: var(--table-stripe);
 }
 
-/* Title Input */
-.title-input {
-    width: 100%;
-}
 
-.title-input input {
-    width: 100%;
-    padding: 0.75rem 0;
-    font-size: 1.75rem;
-    font-family: inherit;
-    border: none;
-    background: transparent;
-    color: var(--text-color);
-}
-
-.title-input input:focus {
-    outline: none;
-}
-
-.title-input input::placeholder {
-    color: var(--secondary-text);
-}
-
-/* Publishing Controls */
-.publishing-controls {
-    margin-top: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1em;
-    align-items: stretch;
-}
 
 .post-status {
     font-family: monospace;
@@ -602,7 +570,62 @@ footer a {
 
 /* EDITOR */
 
+.editor-container {
+    height: 100%;
+    padding: .75rem;
+    display: flex;
+    flex-direction: column;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.editor-container input[type="text"] {
+    font-family: var(--font-monospace);
+    padding: 0.5rem;
+    font-size: .8rem;
+}
+
+.editor-container input[type="submit"] {
+    padding: 0.5rem 1rem;
+    font-size: .8rem;
+    letter-spacing: 0;
+}
+
+/* Title Input */
+.title-input {
+    width: 100%;
+}
+
+.editor-container .title-input input {
+    width: 100%;
+    padding: 0.75rem 0;
+    font-size: 1.75rem;
+    font-family: inherit;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+}
+
+.editor-container .title-input input:focus {
+    outline: none;
+}
+
+.editor-container .title-input input::placeholder {
+    color: var(--secondary-text);
+}
+
+/* Publishing Controls */
+.publishing-controls {
+    margin-top: .75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    align-items: stretch;
+}
+
 .CodeMirror {
+    font-family: var(--font-monospace);
     height: 100%;
     border: 1px solid #ddd;
     border-radius: 4px;

@@ -1,6 +1,8 @@
+import hljs from 'highlight.js';
 import type { Context } from 'hono';
 import { raw } from 'hono/html';
-import { marked } from 'marked';
+import { Marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
 import { randomHash } from './account';
 import { renderPostEditor } from './editor';
 import { renderHTML } from './htmltools';
@@ -110,8 +112,8 @@ export const handleBlogPOST = async (c: Context) => {
     const newPostContent = postContent ? postContent : 'empty draft';
 
     if (!title.length) title = truncate(newPostContent, 45);
-    let postContentHTML = await marked.parse(newPostContent);
-    postContentHTML = await sanitizeHTML(postContentHTML);
+
+    const postContentHTML = await markdownToHTML(newPostContent);
 
     try {
         let item_slug = generate_slug(title);
@@ -129,17 +131,24 @@ export const handleBlogPOST = async (c: Context) => {
 
         const pub_date = new Date().toISOString();
 
-        const status = body.action.toString().toLowerCase() === 'publish' ? 'public' : 'draft';
+        const requestedAction = body.action.toString().toLowerCase();
 
-        await c.env.DB.prepare(
-            'INSERT INTO posts (blog_id, title, slug, content_md, content_html, pub_date, status) values (?, ?, ?, ?, ?, ?, ?)',
-        )
-            .bind(blog.blog_id, title, item_slug, newPostContent, postContentHTML, pub_date, status)
-            .run();
+        if (
+            requestedAction === 'publish' ||
+            requestedAction === 'save as draft' ||
+            requestedAction === 'quick save' ||
+            requestedAction === 'continue editing in full'
+        ) {
+            const status = requestedAction === 'publish' ? 'public' : 'draft';
+            await c.env.DB.prepare(
+                'INSERT INTO posts (blog_id, title, slug, content_md, content_html, pub_date, status) values (?, ?, ?, ?, ?, ?, ?)',
+            )
+                .bind(blog.blog_id, title, item_slug, newPostContent, postContentHTML, pub_date, status)
+                .run();
+            if (requestedAction === 'quick save') return c.redirect('/');
+            if (requestedAction === 'continue editing in full') return c.redirect(`/${item_slug}/edit`);
+        }
 
-        if (body.action.toString().toLowerCase() === 'quick save') return c.redirect('/');
-        if (body.action.toString().toLowerCase() === 'continue editing in full')
-            return c.redirect(`/${item_slug}/edit`);
         return c.redirect(`/${item_slug}`);
     } catch (err) {
         return c.text(err);
@@ -263,8 +272,7 @@ export const handlePostEditPOST = async (c: Context) => {
         .first();
     if (postSlugExists) return c.text('Post slug already exists');
 
-    let contentHTML = await marked.parse(contentMD);
-    contentHTML = await sanitizeHTML(contentHTML);
+    const contentHTML = await markdownToHTML(contentMD);
 
     const status = body.action.toString().toLowerCase() === 'publish' ? 'public' : 'draft';
 
@@ -315,4 +323,20 @@ const generate_slug = (title: string) => {
 
 export const handleNewPost = async (c: Context) => {
     return c.html('aaa');
+};
+
+export const markdownToHTML = async (mdContent: string) => {
+    const marked = new Marked(
+        markedHighlight({
+            emptyLangClass: 'hljs',
+            langPrefix: 'hljs language-',
+            highlight(code, lang, info) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+        }),
+    );
+
+    const postContentHTML = await marked.parse(mdContent);
+    return await sanitizeHTML(postContentHTML);
 };
