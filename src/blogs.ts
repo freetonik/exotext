@@ -11,9 +11,29 @@ import { sanitizeHTML, truncate } from './utils';
 
 export const handleBlog = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
+    const userLoggedIn = !!c.get('USER_LOGGED_IN');
+
+    if (!userLoggedIn) {
+        const cacheKey = new Request(`https://blog-cache/${subdomain}`);
+        const cache = caches.default;
+
+        try {
+            const cachedResponse = await cache.match(cacheKey);
+            if (cachedResponse) {
+                return new Response(cachedResponse.body, {
+                    headers: {
+                        'Content-Type': 'text/html;charset=UTF-8',
+                        'Cache-Hit': 'true',
+                    },
+                });
+            }
+        } catch (error) {
+            // Log cache error but continue with normal page generation
+            console.error('Cache retrieval error:', error);
+        }
+    }
 
     const userId = c.get('USER_ID') || -1;
-    const userLoggedIn = !!c.get('USER_LOGGED_IN');
 
     const batch = await c.env.DB.batch([
         c.env.DB.prepare(`
@@ -42,8 +62,10 @@ export const handleBlog = async (c: Context) => {
 
     `;
 
+    let quickDraft = '';
+
     if (userLoggedIn && userId === blog.user_id) {
-        list += `
+        quickDraft = `
         <details class="quick-draft">
             <summary>Quick draft</summary>
 
@@ -70,7 +92,7 @@ export const handleBlog = async (c: Context) => {
         return `${monthNames[date.getMonth()]} ${date.getDate().toString().padStart(2, '0')}, ${date.getFullYear()}`;
     };
 
-    list += `<section class="posts">`;
+    list += `<section class="posts">${quickDraft}`;
     for (const post of posts) {
         if (post.status !== 'public' && (!userLoggedIn || userId !== blog.user_id)) continue;
         const postDate = formatDate(new Date(post.pub_date));
@@ -87,7 +109,27 @@ export const handleBlog = async (c: Context) => {
     }
     list += '</section>';
 
-    return c.html(renderHTML(`${blog.title}`, raw(list), userLoggedIn));
+    const html = renderHTML(`${blog.title}`, raw(list), userLoggedIn);
+    const response = c.html(html);
+
+    if (!userLoggedIn) {
+        try {
+            const cacheKey = new Request(`https://blog-cache/${subdomain}`);
+            const cache = caches.default;
+            const cacheResponse = new Response(html, {
+                headers: {
+                    'Content-Type': 'text/html;charset=UTF-8',
+                    'Cache-Control': 'public, max-age=31536000', // Cache for 1 hour
+                },
+            });
+            await cache.put(cacheKey, cacheResponse);
+        } catch (error) {
+            // Log cache error but continue with normal response
+            console.error('Cache storage error:', error);
+        }
+    }
+
+    return response;
 };
 
 export const handleBlogPOST = async (c: Context) => {
@@ -150,6 +192,8 @@ export const handleBlogPOST = async (c: Context) => {
             if (requestedAction === 'continue editing in full') return c.redirect(`/${item_slug}/edit`);
         }
 
+        // if we're here, the action was to PUBLISH
+        await invalidateBlogCache(subdomain);
         return c.redirect(`/${item_slug}`);
     } catch (err) {
         return c.text(err);
@@ -158,9 +202,30 @@ export const handleBlogPOST = async (c: Context) => {
 
 export const handlePostSingle = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
-    const userId = c.get('USER_ID') || -1;
     const userLoggedIn = !!c.get('USER_LOGGED_IN');
-    const post_slug = c.req.param('post_slug');
+    const postSlug = c.req.param('post_slug');
+
+    if (!userLoggedIn) {
+        const cacheKey = new Request(`https://blog-cache/${subdomain}/${postSlug}`);
+        const cache = caches.default;
+
+        try {
+            const cachedResponse = await cache.match(cacheKey);
+            if (cachedResponse) {
+                return new Response(cachedResponse.body, {
+                    headers: {
+                        'Content-Type': 'text/html;charset=UTF-8',
+                        'Cache-Hit': 'true',
+                    },
+                });
+            }
+        } catch (error) {
+            // Log cache error but continue with normal page generation
+            console.error('Cache retrieval error:', error);
+        }
+    }
+
+    const userId = c.get('USER_ID') || -1;
 
     const postDBEntry = await c.env.DB.prepare(
         `
@@ -170,7 +235,7 @@ export const handlePostSingle = async (c: Context) => {
             WHERE blogs.slug = ? AND posts.slug = ?
         `,
     )
-        .bind(subdomain, post_slug)
+        .bind(subdomain, postSlug)
         .run();
 
     const post = postDBEntry.results[0];
@@ -206,17 +271,36 @@ export const handlePostSingle = async (c: Context) => {
         <div style="margin-top:3em;">
             <span class="label label-green">${post.status}</span>
             <div style="display: flex; gap: 10px;margin-top:1em;">
-                <form action="${post_slug}/delete" method="POST">
+                <form action="${postSlug}/delete" method="POST">
                     <input class="button-secondary" type="submit" value="Delete" onclick="return confirm('Are you sure?')">
                 </form>
-                <form action="${post_slug}/edit" method="GET">
+                <form action="${postSlug}/edit" method="GET">
                     <input type="submit" value="Edit">
                 </form>
             </div>
         </div>`;
     }
+    const html = renderHTML(`${post.title} | exotext`, raw(list), c.get('USER_LOGGED_IN'));
+    const response = c.html(html);
 
-    return c.html(renderHTML(`${post.title} | exotext`, raw(list), c.get('USER_LOGGED_IN')));
+    if (!userLoggedIn) {
+        try {
+            const cacheKey = new Request(`https://blog-cache/${subdomain}/${postSlug}`);
+            const cache = caches.default;
+            const cacheResponse = new Response(html, {
+                headers: {
+                    'Content-Type': 'text/html;charset=UTF-8',
+                    'Cache-Control': 'public, max-age=31536000', // Cache for 1 hour
+                },
+            });
+            await cache.put(cacheKey, cacheResponse);
+        } catch (error) {
+            // Log cache error but continue with normal response
+            console.error('Cache storage error:', error);
+        }
+    }
+
+    return response;
 };
 
 export const handlePostEditor = async (c: Context) => {
@@ -237,6 +321,7 @@ export const handlePostEditor = async (c: Context) => {
 };
 
 export const handlePostEditPOST = async (c: Context) => {
+    const subdomain = c.get('SUBDOMAIN');
     const userId = c.get('USER_ID') || -1;
     const postSlugExisting = c.req.param('post_slug');
 
@@ -283,6 +368,9 @@ export const handlePostEditPOST = async (c: Context) => {
         .bind(postTitle, contentMD, contentHTML, status, newSlug, post.post_id)
         .run();
 
+    await invalidateBlogCache(subdomain);
+    await invalidatePostCache(subdomain, newSlug);
+
     return c.redirect(`/${newSlug}`);
 };
 
@@ -292,6 +380,7 @@ export const handleBlogRSS = async (c: Context) => {
 
 export const handlePostDeletePOST = async (c: Context) => {
     const userId = c.get('USER_ID') || -1;
+    const subdomain = c.get('SUBDOMAIN');
     const slug = c.req.param('post_slug');
 
     const postDBEntry = await c.env.DB.prepare(`
@@ -309,6 +398,8 @@ export const handlePostDeletePOST = async (c: Context) => {
 
     await c.env.DB.prepare('DELETE FROM posts WHERE post_id = ?').bind(post.post_id).run();
 
+    await invalidateBlogCache(subdomain);
+    await invalidatePostCache(subdomain, slug);
     return c.redirect('/');
 };
 
@@ -345,4 +436,24 @@ export const markdownToHTML = async (mdContent: string) => {
 
     const postContentHTML = await marked.parse(mdContent);
     return await sanitizeHTML(postContentHTML);
+};
+
+export const invalidateBlogCache = async (subdomain: string) => {
+    const cacheKey = new Request(`https://blog-cache/${subdomain}`);
+    const cache = caches.default;
+    try {
+        await cache.delete(cacheKey);
+    } catch (error) {
+        console.error('Cache invalidation error:', error);
+    }
+};
+
+export const invalidatePostCache = async (subdomain: string, postSlug: string) => {
+    const cacheKey = new Request(`https://blog-cache/${subdomain}/${postSlug}`);
+    const cache = caches.default;
+    try {
+        await cache.delete(cacheKey);
+    } catch (error) {
+        console.error('Cache invalidation error:', error);
+    }
 };

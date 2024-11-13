@@ -23,7 +23,7 @@ import {
     handlePostDeletePOST,
     handlePostEditPOST,
     handlePostEditor,
-    handlePostSingle
+    handlePostSingle,
 } from './blogs';
 import { handleHomepage, handleWaitingListPOST } from './homepage';
 // import { handleAdmin } from './admin';
@@ -35,7 +35,6 @@ import {
     subdomainMiddleware,
 } from './middleware';
 import { handleUploadImage } from './upload';
-
 // ————————————————————————————————————————————————————————————————>>>>
 
 // main app handles the root paths

@@ -92,6 +92,11 @@ blockquote {
     margin-bottom: 3em;
 }
 
+details.quick-draft summary {
+    cursor: pointer;
+}
+
+
 .quick-draft form textarea {
     resize: vertical;
     width: 100%;

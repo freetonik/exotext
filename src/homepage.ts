@@ -4,8 +4,12 @@ import { sendEmail } from './email';
 import { renderHTML } from './htmltools';
 
 export const handleHomepage = async (c: Context) => {
+    let userBlock = `
+    <a href="/login" class="blog-link">sign in</a>
+    <a href="/signup" class="blog-link">sign up</a>
+    `;
     if (c.get('USER_LOGGED_IN')) {
-        return c.redirect('/my/account');
+        userBlock = `<a class="blog-link" href="/my/account">my account</a>`;
     }
     const inner = `
     <style>
@@ -49,14 +53,13 @@ export const handleHomepage = async (c: Context) => {
     .signup {
         margin-bottom: 6rem;
         max-width: 400px;
-    }    
+    }
     .container{max-width: 680px;}
     </style>
     <nav>
         <a href="/" class="logo">EXOTEXT</a>
         <div class="menu">
-        <a href="/login" class="blog-link">sign in</a>
-        <a href="/signup" class="blog-link">sign up</a>
+            ${userBlock}
         </div>
     </nav>
 
@@ -70,7 +73,7 @@ export const handleHomepage = async (c: Context) => {
             <input class="form-group" type="email" id="email" name="email" placeholder="your@email.com" required>
             <button type="submit">Join waiting list</button>
         </form>
-        
+
     </section>
 
     <section class="features">
