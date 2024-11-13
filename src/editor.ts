@@ -46,7 +46,7 @@ export const renderPostEditor = (title = '', content = '', slug = '', blog_title
         <div class="publishing-controls">
             <div class="url-input-container">
                 <span class="url-prefix">rakhim.exotext.com/</span>
-                <input id="post-slug"type="text" class="url-suffix" placeholder="slug" value="${slug}">
+                <input id="post-slug" name="post-slug" type="text" class="url-suffix" placeholder="slug" value="${slug}">
             </div>
 
             <div class="buttons">
