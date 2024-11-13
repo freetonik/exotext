@@ -11,13 +11,21 @@ export const renderPostEditor = (title = '', content = '', slug = '', blog_title
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBkPSJtMTIuNjcyLjY2OCAzLjA1OSA2LjE5NyA2LjgzOC45OTNhLjc1Ljc1IDAgMCAxIC40MTYgMS4yOGwtNC45NDggNC44MjMgMS4xNjggNi44MTJhLjc1Ljc1IDAgMCAxLTEuMDg4Ljc5TDEyIDE4LjM0N2wtNi4xMTYgMy4yMTZhLjc1Ljc1IDAgMCAxLTEuMDg4LS43OTFsMS4xNjgtNi44MTEtNC45NDgtNC44MjNhLjc0OS43NDkgMCAwIDEgLjQxNi0xLjI3OWw2LjgzOC0uOTk0TDExLjMyNy42NjhhLjc1Ljc1IDAgMCAxIDEuMzQ1IDBaIj48L3BhdGg+PC9zdmc+" />
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js" integrity="sha512-8RnEqURPUc5aqFEN04aQEiPlSAdE0jlFS/9iGgUyNtwFnSKCXhmB6ZTNl7LnDtDWKabJIASzXrzD0K+LYexU9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/default.min.css" integrity="sha512-hasIneQUHlh06VNBe7f6ZcHmeRTLIaQWFd43YriJ0UND19bvYRauxthDg8E4eVNPm9bRUhr5JGeqH7FRFXQu5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" integrity="sha512-6yoqbrcLAHDWAdQmiRlHG4+m0g/CT/V9AGyxabG8j7Jk8j3r3K6due7oqpiRMZqcYe9WM2gPcaNNxnl2ux+3tA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.css" integrity="sha512-t2ALGTyUR6g1HJiHCmSTge2yGseGofdO88Q+zOWQx/N0ikecVw0YuyOet9xZDV8+Vx0Y0n1a3f3Qx3V9CcnsKA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.7/katex.min.js" integrity="sha512-EKW5YvKU3hpyyOcN6jQnAxO/L8gts+YdYV6Yymtl8pk9YlYFtqJgihORuRoBXK8/cOIlappdU6Ms8KdK6yBCgA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/markdown/markdown.min.js" integrity="sha512-DmMao0nRIbyDjbaHc8fNd3kxGsZj9PCU6Iu/CeidLQT9Py8nYVA5n0PqXYmvqNdU+lCiTHOM/4E7bM/G8BttJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.0/lib/marked.umd.min.js" integrity="sha512-0oATHzUMCnInjiTnCGLO89UZaxHjTxLmO6pjgEyEtrENCNm4LbyC7F6T3is+085e4EtOl+mFqwQyR0y6v6aqDQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/marked-highlight/2.2.1/index.umd.min.js" integrity="sha512-T5TNAGHd65imlc6xoRDq9hARHowETqOlOGMJ443E+PohphJHbzPpwQNBtcpmcjmHmQKLctZ/W3H2cY/T8EGDPA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/marked-katex-extension@5.1.3/lib/index.umd.min.js"></script>
 
         <style>${renderedCSS}</style>
     </head>
@@ -36,7 +44,11 @@ export const renderPostEditor = (title = '', content = '', slug = '', blog_title
             </div>
 
         <div class="publishing-controls">
-            <input id="post-slug" name="post-slug" type="text" placeholder="slug" value="${slug}">
+            <div class="url-input-container">
+                <span class="url-prefix">rakhim.exotext.com/</span>
+                <input id="post-slug"type="text" class="url-suffix" placeholder="slug" value="${slug}">
+            </div>
+
             <div class="buttons">
                 <a class="button button-secondary" href="#" id="preview-link">Preview</a>
                 <input class="button-secondary" type="submit" name="action" value="Save as draft">
@@ -199,6 +211,25 @@ export const renderPostEditor = (title = '', content = '', slug = '', blog_title
             event.preventDefault();
         });
 
+        const { Marked } = window.marked;
+        const {markedHighlight} = globalThis.markedHighlight;
+        const marked = new Marked(
+        markedHighlight({
+            emptyLangClass: 'hljs',
+            langPrefix: 'hljs language-',
+            highlight(code, lang, info) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+            }
+        })
+        );
+
+        const options = {
+            throwOnError: false,
+        };
+
+        marked.use(markedKatex(options));
+
         document.addEventListener('DOMContentLoaded', () => {
             const previewLink = document.getElementById('preview-link');
             const overlay = document.getElementById('preview-overlay');
@@ -218,29 +249,33 @@ export const renderPostEditor = (title = '', content = '', slug = '', blog_title
                 document.body.style.overflow = 'hidden';
             };
 
+            const date_format_opts = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+            };
+
+
             // Preview link click handler
             previewLink.addEventListener('click', async (e) => {
                 e.preventDefault();
+                const postDate = new Date().toLocaleDateString('en-UK', date_format_opts);
 
                 try {
-                    const response = await fetch('preview', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            "post-title": document.getElementById('post-title').value,
-                            "post-content": editor.getValue(),
-                            "blog-title": "${blog_title}"
-                        })
-                    });
+                    const ht = '<nav> <a target="_blank" href="/" class="blog-link">← '
+                    + "${blog_title}"
+                    + '</a></nav> <article> <header class="post-header"> <h1>'
+                    + document.getElementById('post-title').value
+                    + '</h1> <small class="label label-red">unsaved preview</small> <time class="post-date">'
+                    + postDate
+                    + '</time> </header> <div class="post-content">'
+                    + marked.parse(editor.getValue(), { sanitize: true })
+                    + '</div> </article>'
 
-                    if (!response.ok) {
-                        throw new Error('Preview request failed');
-                    }
-
-                    const html = await response.text();
-                    previewContent.innerHTML = html;
+                    previewContent.innerHTML = ht;
                     openOverlay();
                 } catch (error) {
                     console.error('Preview error:', error);

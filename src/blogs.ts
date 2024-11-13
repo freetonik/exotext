@@ -312,49 +312,6 @@ export const handlePostDeletePOST = async (c: Context) => {
     return c.redirect('/');
 };
 
-interface PreviewRequest {
-    'post-title': string;
-    'post-content': string;
-    'blog-title': string;
-}
-
-export const handlePostPreviewPOST = async (c: Context) => {
-    const body = await c.req.json<PreviewRequest>();
-
-    const postTitle = body['post-title'].toString();
-    if (!postTitle) return c.text('Post title is required');
-    const contentMD = body['post-content'].toString();
-    if (!contentMD) return c.text('Post content is required');
-
-    const date_format_opts: Intl.DateTimeFormatOptions = {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-    };
-    const postDate = new Date(new Date()).toLocaleDateString('en-UK', date_format_opts);
-
-    const contentHTML = await markdownToHTML(contentMD);
-    const result = `
-    <nav>
-        <a href="/" class="blog-link">← ${body['blog-title']}</a>
-    </nav>
-    <article>
-        <header class="post-header">
-            <h1>${postTitle}</h1>
-            <small class="label label-red">unsaved preview</small> <time class="post-date">${postDate}</time>
-        </header>
-        <div class="post-content">
-        ${contentHTML}
-        </div
-    </article>
-
-    `;
-    return c.html(result);
-};
-
 // UTILS
 const generate_slug = (title: string) => {
     if (title === 'rss') return 'rss-2';

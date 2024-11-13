@@ -23,8 +23,7 @@ import {
     handlePostDeletePOST,
     handlePostEditPOST,
     handlePostEditor,
-    handlePostPreviewPOST,
-    handlePostSingle,
+    handlePostSingle
 } from './blogs';
 import { handleHomepage, handleWaitingListPOST } from './homepage';
 // import { handleAdmin } from './admin';
@@ -111,7 +110,6 @@ subdomainApp.get('/:post_slug', handlePostSingle);
 subdomainApp.get('/:post_slug/edit', handlePostEditor);
 subdomainApp.post('/:post_slug/edit', handlePostEditPOST);
 subdomainApp.post('/:post_slug/delete', handlePostDeletePOST);
-subdomainApp.post('/:post_slug/preview', handlePostPreviewPOST);
 
 subdomainApp.notFound(handleNotFound);
 subdomainApp.onError(handleError);
