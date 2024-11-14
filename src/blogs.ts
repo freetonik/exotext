@@ -136,15 +136,14 @@ export const handleBlogPOST = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
     const userId = c.get('USER_ID') || -1;
 
-    if (!c.get('USER_LOGGED_IN')) return c.text('Unauthorized', 401);
+    if (!c.get('USER_LOGGED_IN')) return c.notFound();
 
     // get blog_id, user_id, feed_id for the given subdomain
-    const blogDBEntry = await c.env.DB.prepare('SELECT blogs.blog_id, blogs.user_id FROM blogs WHERE blogs.slug = ?')
+    const blog = await c.env.DB.prepare('SELECT blogs.blog_id, blogs.user_id FROM blogs WHERE blogs.slug = ?')
         .bind(subdomain)
         .first();
-    if (!blogDBEntry) return c.notFound();
+    if (!blog) return c.notFound();
 
-    const blog = blogDBEntry;
     if (userId !== blog.user_id) return c.text('Unauthorized', 401);
 
     // ok, user is logged in and is the owner of the blog
@@ -167,9 +166,6 @@ export const handleBlogPOST = async (c: Context) => {
 
         if (slug_check.results.length) {
             item_slug += `-${randomHash(8)}`;
-            if (item_slug === generate_slug(title)) {
-                throw new Error('Unable to generate a unique slug after 10 attempts');
-            }
         }
 
         const pub_date = new Date().toISOString();
@@ -348,15 +344,16 @@ export const handlePostEditPOST = async (c: Context) => {
     const contentMD = body['post-content'].toString();
     if (!contentMD) return c.text('Post content is required');
 
-    const postSlug = body['post-slug'].toString().toLowerCase();
-    const newSlug = postSlug ? postSlug : postSlugExisting;
-    // TODO: this is bad, but it's a quick fix for now
+    let newSlug = body['post-slug'].toString().toLowerCase();
+    if (postSlugExisting === newSlug) newSlug += `-${randomHash(8)}`;
 
-    // check if newSlug already exists
-    const postSlugExists = await c.env.DB.prepare('SELECT slug FROM posts WHERE slug = ? AND post_id != ?')
-        .bind(newSlug, post.post_id)
-        .first();
-    if (postSlugExists) return c.text('Post slug already exists');
+    // slug was changed, try to generate a unique slug if it already exists
+    if (postSlugExisting !== newSlug) {
+        const postSlugExists = await c.env.DB.prepare('SELECT slug FROM posts WHERE slug = ? AND post_id != ?')
+            .bind(newSlug, post.post_id)
+            .first();
+        if (postSlugExists) newSlug += `-${randomHash(8)}`;
+    }
 
     const contentHTML = await markdownToHTML(contentMD);
 
@@ -367,6 +364,8 @@ export const handlePostEditPOST = async (c: Context) => {
     )
         .bind(postTitle, contentMD, contentHTML, status, newSlug, post.post_id)
         .run();
+
+    // TODO: actually check if there are errors and show a message without losing state
 
     await invalidateBlogCache(subdomain);
     await invalidatePostCache(subdomain, newSlug);
