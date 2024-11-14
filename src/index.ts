@@ -27,7 +27,7 @@ import {
 } from './blogs';
 import { handleHomepage, handleWaitingListPOST } from './homepage';
 // import { handleAdmin } from './admin';
-import { renderHTML } from './htmltools';
+import { renderHTMLGeneral } from './htmltools';
 import {
     adminRequiredMiddleware,
     authCheckMiddleware,
@@ -50,15 +50,20 @@ app.use('/admin/*', adminRequiredMiddleware);
 
 const handleNotFound = (c: Context) => {
     return c.html(
-        renderHTML('404 | exotext', raw(`<div class="flash">Page not found.</div>`), c.get('USER_LOGGED_IN')),
+        renderHTMLGeneral('404 | exotext', raw(`<div class="flash">Page not found.</div>`), c.get('USER_LOGGED_IN')),
     );
 };
 
 const handleError = (err: Error, c: Context) => {
     return c.html(
-        renderHTML('Error | exotext', raw(`<div class="flash flash-red">${err}.</div>`), c.get('USER_LOGGED_IN'), {
-            footer: false,
-        }),
+        renderHTMLGeneral(
+            'Error | exotext',
+            raw(`<div class="flash flash-red">${err}.</div>`),
+            c.get('USER_LOGGED_IN'),
+            {
+                footer: false,
+            },
+        ),
     );
 };
 
@@ -104,7 +109,7 @@ subdomainApp.get('/~new', handleNewPost);
 subdomainApp.post('/', handleBlogPOST);
 subdomainApp.post('/upload', handleUploadImage);
 
-subdomainApp.get('/rss', handleBlogRSS);
+subdomainApp.get('/rss.xml', handleBlogRSS);
 subdomainApp.get('/:post_slug', handlePostSingle);
 subdomainApp.get('/:post_slug/edit', handlePostEditor);
 subdomainApp.post('/:post_slug/edit', handlePostEditPOST);

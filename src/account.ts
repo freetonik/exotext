@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { raw } from 'hono/html';
 import { sendEmail } from './email';
-import { renderHTML } from './htmltools';
+import { renderHTMLGeneral } from './htmltools';
 
 export const handleMyAccount = async (c: Context) => {
     const user_id = c.get('USER_ID');
@@ -81,7 +81,7 @@ export const handleMyAccount = async (c: Context) => {
          <a class="button" href="/logout">Log out</a>
     </div>`;
 
-    return c.html(renderHTML('My account | exotext', raw(list), username));
+    return c.html(renderHTMLGeneral('My account | exotext', raw(list), username));
 };
 
 export const handleVerifyEmail = async (c: Context) => {
@@ -93,7 +93,7 @@ export const handleVerifyEmail = async (c: Context) => {
 
     if (!result.results.length) {
         return c.html(
-            renderHTML(
+            renderHTMLGeneral(
                 'Email verification | exotext',
                 raw(`<div class="flash flash-red">Email verification code is invalid or has been used already.</div>`),
                 c.get('USER_LOGGED_IN'),
@@ -112,7 +112,9 @@ export const handleVerifyEmail = async (c: Context) => {
         : `<div class="flash flash-success">You can now <a href="/login">log in</a>.</div>`;
 
     return c.html(
-        renderHTML('Email verification | exotext', raw(message_flash), c.get('USER_LOGGED_IN'), { footer: false }),
+        renderHTMLGeneral('Email verification | exotext', raw(message_flash), c.get('USER_LOGGED_IN'), {
+            footer: false,
+        }),
     );
 };
 
@@ -129,7 +131,7 @@ export const handleResentVerificationEmailPOST = async (c: Context) => {
     await sendEmailVerificationLink(c.env, result.username, result.email, result.verification_code);
 
     return c.html(
-        renderHTML(
+        renderHTMLGeneral(
             'Email verification | exotext',
             raw(`<div class="flash flash-blue">Verification link is sent</div>`),
             true,
@@ -187,7 +189,9 @@ const renderLoginForm = (email?: string, error?: string) => {
 export const handleLogin = async (c: Context) => {
     if (c.get('USER_ID')) return c.redirect('/my');
 
-    return c.html(renderHTML('Login or create account | exotext', raw(renderLoginForm()), false, { footer: false }));
+    return c.html(
+        renderHTMLGeneral('Login or create account | exotext', raw(renderLoginForm()), false, { footer: false }),
+    );
 };
 
 export const handleResetPassword = async (c: Context) => {
@@ -246,7 +250,7 @@ export const handleResetPassword = async (c: Context) => {
         `;
     }
 
-    return c.html(renderHTML('Reset password | exotext', raw(inner), false, { footer: false }));
+    return c.html(renderHTMLGeneral('Reset password | exotext', raw(inner), false, { footer: false }));
 };
 
 export const handleResetPasswordPOST = async (c: Context) => {
@@ -271,7 +275,7 @@ export const handleResetPasswordPOST = async (c: Context) => {
     }
 
     return c.html(
-        renderHTML(
+        renderHTMLGeneral(
             'Password reset | exotext',
             raw(`<div class="flash">
                 If the email address you entered is associated with an account, you will receive an email with a link to reset your password.
@@ -316,7 +320,7 @@ export const handleSetPasswordPOST = async (c: Context) => {
         `<div class="flash flash-success">Password reset successfully. <a href="/login">Log in now</a>.</div>`,
     );
 
-    return c.html(renderHTML('Reset password | exotext', inner, false, { footer: false }));
+    return c.html(renderHTMLGeneral('Reset password | exotext', inner, false, { footer: false }));
 };
 
 export const handleSignup = async (c: Context) => {
@@ -403,7 +407,7 @@ export const handleSignup = async (c: Context) => {
 
     </div>
     `;
-    return c.html(renderHTML('Create account | exotext', raw(inner), false, { footer: false }));
+    return c.html(renderHTMLGeneral('Create account | exotext', raw(inner), false, { footer: false }));
 };
 
 export const handleLoginPOST = async (c: Context) => {
@@ -413,7 +417,7 @@ export const handleLoginPOST = async (c: Context) => {
 
     if (!email || !attempted_password) {
         return c.html(
-            renderHTML(
+            renderHTMLGeneral(
                 'Login or create account | exotext',
                 raw(renderLoginForm(email, 'Username and password are required')),
                 false,
@@ -426,7 +430,7 @@ export const handleLoginPOST = async (c: Context) => {
     if (!user) {
         // though user may not exist, we should not leak this information
         return c.html(
-            renderHTML(
+            renderHTMLGeneral(
                 'Login or create account | exotext',
                 raw(renderLoginForm(email, 'Wrong email or password')),
                 false,
@@ -544,7 +548,7 @@ const createSessionSetCookieAndRedirect = async (
 
     if (first_login) {
         return c.html(
-            renderHTML(
+            renderHTMLGeneral(
                 'Account created | exotext',
                 raw(`<div class="flash">
                     Great! You are now registered and logged in. Check your email for a verification link. </div>`),

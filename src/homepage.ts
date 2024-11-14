@@ -1,7 +1,7 @@
 import type { Context } from 'hono';
 import { raw } from 'hono/html';
 import { sendEmail } from './email';
-import { renderHTML } from './htmltools';
+import { renderHTMLGeneral } from './htmltools';
 
 export const handleHomepage = async (c: Context) => {
     let userBlock = `
@@ -95,7 +95,7 @@ export const handleHomepage = async (c: Context) => {
         <p>Made by <a href="https://hypergraph.fi/">Hypergraph Labs</a></p>
     </footer>
         `;
-    return c.html(renderHTML('Exotext', raw(inner), c.get('USER_LOGGED_IN'), { footer: false }));
+    return c.html(renderHTMLGeneral('Exotext', raw(inner), c.get('USER_LOGGED_IN'), { footer: false }));
 };
 
 export const handleWaitingListPOST = async (c: Context) => {
@@ -125,7 +125,7 @@ export const handleWaitingListPOST = async (c: Context) => {
     await sendEmail(c.env, email, 'Exotext waiting list', emailBody);
 
     return c.html(
-        renderHTML(
+        renderHTMLGeneral(
             'You are in!',
             raw(
                 `<div class="flash flash-success">You are now on the waiting list. You'll get one email now, and the invitation email when it's your turn to enjoy Exotext. And you will enjoy it. YOU. WILL.</div>`,

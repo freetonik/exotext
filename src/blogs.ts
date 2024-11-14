@@ -4,9 +4,10 @@ import { raw } from 'hono/html';
 import { Marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import markedKatex from 'marked-katex-extension';
+import RSS from 'rss';
 import { randomHash } from './account';
 import { renderPostEditor } from './editor';
-import { renderHTML } from './htmltools';
+import { renderHTMLBlog } from './htmltools';
 import { sanitizeHTML, truncate } from './utils';
 
 export const handleBlog = async (c: Context) => {
@@ -109,7 +110,7 @@ export const handleBlog = async (c: Context) => {
     }
     list += '</section>';
 
-    const html = renderHTML(`${blog.title}`, raw(list), userLoggedIn);
+    const html = renderHTMLBlog(`${blog.title}`, raw(list), userLoggedIn);
     const response = c.html(html);
 
     if (!userLoggedIn) {
@@ -276,7 +277,7 @@ export const handlePostSingle = async (c: Context) => {
             </div>
         </div>`;
     }
-    const html = renderHTML(`${post.title} | exotext`, raw(list), c.get('USER_LOGGED_IN'));
+    const html = renderHTMLBlog(`${post.title} | exotext`, raw(list), c.get('USER_LOGGED_IN'));
     const response = c.html(html);
 
     if (!userLoggedIn) {
@@ -374,7 +375,47 @@ export const handlePostEditPOST = async (c: Context) => {
 };
 
 export const handleBlogRSS = async (c: Context) => {
-    return c.html('RSS SOON');
+    const subdomain = c.get('SUBDOMAIN');
+
+    const batch = await c.env.DB.batch([
+        c.env.DB.prepare(`
+        SELECT title, user_id, slug
+        FROM blogs
+        WHERE blogs.slug = ?`).bind(subdomain),
+
+        c.env.DB.prepare(`
+        SELECT posts.post_id, posts.title, posts.slug, posts.pub_date, posts.content_html
+        FROM posts
+        JOIN blogs ON blogs.blog_id = posts.blog_id
+        WHERE blogs.slug = ?
+        ORDER BY posts.pub_date DESC`).bind(subdomain),
+    ]);
+
+    if (!batch[0].results.length) return c.notFound();
+    const blog = batch[0].results[0];
+    const posts = batch[1].results;
+
+    const feed = new RSS({
+        title: blog.title,
+        description: blog.description,
+        feed_url: `https://${subdomain}.exotext.com/rss.xml`,
+        site_url: `https://${subdomain}.exotext.com`,
+        language: 'en',
+        // pubDate: 'May 20, 2012 04:00:00 GMT', // TODO!
+    });
+
+    for (const post of posts) {
+        feed.item({
+            title: post.title,
+            description: post.content_html,
+            url: `https://${subdomain}.exotext.com/${post.slug}`,
+            date: post.pub_date,
+        });
+    }
+
+    return c.text(feed.xml({ indent: true }), 200, {
+        'Content-Type': 'application/xml',
+    });
 };
 
 export const handlePostDeletePOST = async (c: Context) => {
@@ -404,7 +445,7 @@ export const handlePostDeletePOST = async (c: Context) => {
 
 // UTILS
 const generate_slug = (title: string) => {
-    if (title === 'rss') return 'rss-2';
+    if (title === 'rss.xml') return 'rss.xml-2';
     return title
         .substring(0, 32)
         .replace(/\s+/g, '-')
