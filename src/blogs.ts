@@ -387,7 +387,7 @@ export const handleBlogRSS = async (c: Context) => {
         SELECT posts.post_id, posts.title, posts.slug, posts.pub_date, posts.content_html
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
-        WHERE blogs.slug = ?
+        WHERE status = 'public' and blogs.slug = ?
         ORDER BY posts.pub_date DESC`).bind(subdomain),
     ]);
 
