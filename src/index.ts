@@ -25,7 +25,7 @@ import {
     handlePostEditor,
     handlePostSingle,
 } from './blogs';
-import { handleHomepage, handleWaitingListPOST } from './homepage';
+import { handleHomepage } from './homepage';
 // import { handleAdmin } from './admin';
 import { renderHTMLGeneral } from './htmltools';
 import {
@@ -35,6 +35,7 @@ import {
     subdomainMiddleware,
 } from './middleware';
 import { handleUploadImage } from './upload';
+import { handleWaitlistRequest } from './waitlist';
 // ————————————————————————————————————————————————————————————————>>>>
 
 // main app handles the root paths
@@ -72,7 +73,6 @@ app.onError(handleError);
 
 // APP ROUTES
 app.get('/', handleHomepage);
-app.post('/waiting_list', handleWaitingListPOST);
 
 // ADMIN ROUTES
 // app.get('/admin', handleAdmin);
@@ -94,7 +94,7 @@ app.post('/my/account/create_blog', adminRequiredMiddleware, handleNewBlogPost);
 app.post('/my/account/resend_verification_link', handleResentVerificationEmailPOST);
 app.get('/verify_email', handleVerifyEmail);
 
-// app.get('/about', async (c: Context) => c.html(renderHTML('About | exotext', raw(about), c.get('USER_LOGGED_IN'))));
+app.get('/waitlist', handleWaitlistRequest);
 
 const subdomainApp = new Hono<{ Bindings: CloudflareBindings }>({
     strict: false,
