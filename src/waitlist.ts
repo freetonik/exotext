@@ -16,3 +16,14 @@ export const handleWaitlistRequest = async (c: Context) => {
         ),
     );
 };
+
+export const handleWaitlistConfirmed = async (c: Context) => {
+    return c.html(
+        renderHTMLGeneral(
+            'Exotext Waitlist',
+            raw(`<div class="flash">You are now on the waitlist. You'll get an invitation email soon. Ok bye.</div>`),
+            false,
+            { footer: false },
+        ),
+    );
+};

@@ -35,7 +35,7 @@ import {
     subdomainMiddleware,
 } from './middleware';
 import { handleUploadImage } from './upload';
-import { handleWaitlistRequest } from './waitlist';
+import { handleWaitlistConfirmed, handleWaitlistRequest } from './waitlist';
 // ————————————————————————————————————————————————————————————————>>>>
 
 // main app handles the root paths
@@ -95,6 +95,7 @@ app.post('/my/account/resend_verification_link', handleResentVerificationEmailPO
 app.get('/verify_email', handleVerifyEmail);
 
 app.get('/waitlist', handleWaitlistRequest);
+app.get('/waitlist/confirmed', handleWaitlistConfirmed);
 
 const subdomainApp = new Hono<{ Bindings: CloudflareBindings }>({
     strict: false,
