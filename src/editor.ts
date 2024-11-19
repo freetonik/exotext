@@ -70,6 +70,7 @@ export const renderPostEditor = (title = '', content = '', slug = '', blog_title
             theme: 'default',
             tabSize: 2,
             autofocus: true,
+            spellcheck: true,
 
             lineWrapping: true,
             lineNumbers: false,

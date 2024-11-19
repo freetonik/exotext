@@ -139,8 +139,4 @@ appMain.all('*', async (c: Context, next) => {
 // MAIN EXPORT
 export default {
     fetch: (req: Request, env: Env, ctx: ExecutionContext) => appMain.fetch(req, env, ctx), // normal processing of requests
-
-    // async scheduled(event: ScheduledEvent, env: Bindings, ctx: ExecutionContext) {
-    //     // scheduled tasks
-    // },
 };
