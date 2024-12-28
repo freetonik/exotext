@@ -336,6 +336,7 @@ article h3 {
 
 article p {
     max-width: 70ch;
+    margin-block: 1lh;
 }
 
 article a {

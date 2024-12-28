@@ -18,8 +18,7 @@ import {
 import {
     handleBlog,
     handleBlogPOST,
-    handleBlogRSS,
-    handleNewPost, // new blog post handler
+    handleBlogRSS, // new blog post handler
     handlePostDeletePOST,
     handlePostEditPOST,
     handlePostEditor,
@@ -106,15 +105,15 @@ subdomainApp.use('*', subdomainMiddleware);
 subdomainApp.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
 subdomainApp.get('/', handleBlog);
-subdomainApp.get('/~new', handleNewPost);
-subdomainApp.post('/', handleBlogPOST);
+subdomainApp.post('/', handleBlogPOST); // new item
+subdomainApp.post('/:post_id', handlePostEditPOST);
+subdomainApp.post('/:post_slug/delete', handlePostDeletePOST); // todo: HTTP DELETE
 subdomainApp.post('/upload', handleUploadImage);
+// subdomainApp.get('/~new', handleNewPost);
 
 subdomainApp.get('/rss.xml', handleBlogRSS);
 subdomainApp.get('/:post_slug', handlePostSingle);
 subdomainApp.get('/:post_slug/edit', handlePostEditor);
-subdomainApp.post('/:post_slug/edit', handlePostEditPOST);
-subdomainApp.post('/:post_slug/delete', handlePostDeletePOST);
 
 subdomainApp.notFound(handleNotFound);
 subdomainApp.onError(handleError);

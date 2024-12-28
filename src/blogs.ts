@@ -5,7 +5,6 @@ import { Marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import markedKatex from 'marked-katex-extension';
 import RSS from 'rss';
-import { randomHash } from './account';
 import { renderPostEditor } from './editor';
 import { renderHTMLBlog } from './htmltools';
 import { sanitizeHTML, truncate } from './utils';
@@ -133,10 +132,12 @@ export const handleBlog = async (c: Context) => {
     return response;
 };
 
+// create new draft blog post and either go to editing or homepage
 export const handleBlogPOST = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
-    const userId = c.get('USER_ID') || -1;
+    if (!subdomain) return c.notFound();
 
+    const userId = c.get('USER_ID') || -1;
     if (!c.get('USER_LOGGED_IN')) return c.notFound();
 
     // get blog_id, user_id, feed_id for the given subdomain
@@ -149,14 +150,13 @@ export const handleBlogPOST = async (c: Context) => {
 
     // ok, user is logged in and is the owner of the blog
     const body = await c.req.parseBody();
+
     let title = body['post-title'].toString();
-    const postContent = body['post-content'].toString();
+    const postContentFromBody = body['post-content'].toString().trim();
+    const postContent = postContentFromBody ? postContentFromBody : 'empty draft';
 
-    const newPostContent = postContent ? postContent : 'empty draft';
-
-    if (!title.length) title = truncate(newPostContent, 45);
-
-    const postContentHTML = await markdownToHTML(newPostContent);
+    if (!title.length) title = truncate(postContent, 128);
+    const postContentHTML = await markdownToHTML(postContent);
 
     try {
         let item_slug = generate_slug(title);
@@ -166,32 +166,22 @@ export const handleBlogPOST = async (c: Context) => {
             .run();
 
         if (slug_check.results.length) {
-            item_slug += `-${randomHash(8)}`;
+            item_slug += `-${Date.now()}`;
         }
 
-        const pub_date = new Date().toISOString();
-
+        const pubDate = new Date().toISOString();
         const requestedAction = body.action.toString().toLowerCase();
 
-        if (
-            requestedAction === 'publish' ||
-            requestedAction === 'save as draft' ||
-            requestedAction === 'quick save' ||
-            requestedAction === 'continue editing in full'
-        ) {
-            const status = requestedAction === 'publish' ? 'public' : 'draft';
-            await c.env.DB.prepare(
-                'INSERT INTO posts (blog_id, title, slug, content_md, content_html, pub_date, status) values (?, ?, ?, ?, ?, ?, ?)',
-            )
-                .bind(blog.blog_id, title, item_slug, newPostContent, postContentHTML, pub_date, status)
-                .run();
-            if (requestedAction === 'quick save') return c.redirect('/');
-            if (requestedAction === 'continue editing in full') return c.redirect(`/${item_slug}/edit`);
-        }
+        await c.env.DB.prepare(
+            'INSERT INTO posts (blog_id, title, slug, content_md, content_html, pub_date) values (?, ?, ?, ?, ?, ?)',
+        )
+            .bind(blog.blog_id, title, item_slug, postContent, postContentHTML, pubDate)
+            .run();
+        if (requestedAction === 'quick save') return c.redirect('/');
+        if (requestedAction === 'continue editing in full') return c.redirect(`/${item_slug}/edit`);
+        // }
 
-        // if we're here, the action was to PUBLISH
-        await invalidateBlogCache(subdomain);
-        return c.redirect(`/${item_slug}`);
+        return c.redirect('/');
     } catch (err) {
         return c.text(err);
     }
@@ -314,29 +304,25 @@ export const handlePostEditor = async (c: Context) => {
 
     if (!c.get('USER_LOGGED_IN') || userId !== post.user_id) return c.text('Unauthorized', 401);
 
-    return c.html(renderPostEditor(post.title, post.content_md, post.slug, post.blog_title));
+    return c.html(renderPostEditor(post.post_id, post.title, post.content_md, post.slug, post.blog_title));
 };
 
+// edit existing blog post
 export const handlePostEditPOST = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
     const userId = c.get('USER_ID') || -1;
-    const postSlugExisting = c.req.param('post_slug');
+    const postId = c.req.param('post_id');
 
-    const postDBEntry = await c.env.DB.prepare(
-        `
-            SELECT posts.post_id, posts.blog_id, blogs.user_id
-            FROM posts
-            JOIN blogs ON blogs.blog_id = posts.blog_id
-            WHERE posts.slug = ?
-        `,
-    )
-        .bind(postSlugExisting)
-        .run();
+    const post = await c.env.DB.prepare(`
+        SELECT posts.post_id, posts.slug, posts.blog_id, blogs.user_id
+        FROM posts
+        JOIN blogs ON blogs.blog_id = posts.blog_id
+        WHERE posts.post_id = ?
+        `)
+        .bind(postId)
+        .first();
 
-    const post = postDBEntry.results[0];
-
-    if (!c.get('USER_LOGGED_IN') || userId !== post.user_id) return c.redirect('/');
-    if (userId !== post.user_id) return c.text('Unauthorized', 401);
+    if (!c.get('USER_LOGGED_IN') || userId !== post.user_id) return c.text('Unauthorized', 401);
 
     const body = await c.req.parseBody();
 
@@ -346,19 +332,22 @@ export const handlePostEditPOST = async (c: Context) => {
     if (!contentMD) return c.text('Post content is required');
 
     let newSlug = body['post-slug'].toString().toLowerCase();
-    if (postSlugExisting === newSlug) newSlug += `-${randomHash(8)}`;
 
-    // slug was changed, try to generate a unique slug if it already exists
-    if (postSlugExisting !== newSlug) {
-        const postSlugExists = await c.env.DB.prepare('SELECT slug FROM posts WHERE slug = ? AND post_id != ?')
-            .bind(newSlug, post.post_id)
+    // slug has been changed
+    if (post.slug !== newSlug) {
+        // check if slug already exists
+        const postSlugExisting = await c.env.DB.prepare(
+            'SELECT slug FROM posts WHERE blog_id = ? AND slug = ? AND post_id != ?',
+        )
+            .bind(post.blog_id, newSlug, post.post_id)
             .first();
-        if (postSlugExists) newSlug += `-${randomHash(8)}`;
+
+        if (postSlugExisting) newSlug += `-${Date.now()}`;
     }
 
     const contentHTML = await markdownToHTML(contentMD);
-
-    const status = body.action.toString().toLowerCase() === 'publish' ? 'public' : 'draft';
+    const requestedAction = body.action.toString().toLowerCase();
+    const status = requestedAction === 'publish' ? 'public' : 'draft';
 
     const results = await c.env.DB.prepare(
         'UPDATE posts SET title = ?, content_md = ?, content_html = ?, status = ?, slug = ? WHERE post_id = ?',
@@ -447,9 +436,9 @@ export const handlePostDeletePOST = async (c: Context) => {
 const generate_slug = (title: string) => {
     if (title === 'rss.xml') return 'rss.xml-2';
     return title
-        .substring(0, 32)
+        .substring(0, 128)
+        .replace(/[^a-zA-Z0-9\s]/g, '')
         .replace(/\s+/g, '-')
-        .replace(/[^a-zA-Z0-9-]/g, '-')
         .toLowerCase();
 };
 

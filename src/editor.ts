@@ -1,6 +1,9 @@
 import { renderedCSS } from './css';
 
-export const renderPostEditor = (title = '', content = '', slug = '', blog_title = '') => {
+export const renderPostEditor = (postId?: number, title = '', content = '', slug = '', blog_title = '') => {
+    // if postId is provided, we are editing an existing post
+    // otherwise, we are creating a new post
+    const actionTarget = postId ? `/${postId}` : '/';
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -32,7 +35,7 @@ export const renderPostEditor = (title = '', content = '', slug = '', blog_title
 
     <div class="editor-container">
 
-        <form style="height: 100%; display: flex; flex-direction: column;" method="POST">
+        <form style="height: 100%; display: flex; flex-direction: column;" method="POST" action="${actionTarget}" >
 
             <div class="title-input">
                 <input id="post-title" name="post-title" type="text" placeholder="Post title" value="${title}">

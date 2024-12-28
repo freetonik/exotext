@@ -250,12 +250,15 @@ export const handleResetPassword = async (c: Context) => {
         `;
     }
 
-    return c.html(renderHTMLGeneral('Reset password | exotext', raw(inner), false, { footer: false }));
+    return c.html(
+        renderHTMLGeneral('Reset password | exotext', raw(inner), false, {
+            footer: false,
+        }),
+    );
 };
 
 export const handleResetPasswordPOST = async (c: Context) => {
     const body = await c.req.parseBody();
-    console.log(body);
     const email = body.email.toString().toLowerCase();
 
     if (!email) throw new Error('Email is required');
@@ -320,7 +323,11 @@ export const handleSetPasswordPOST = async (c: Context) => {
         `<div class="flash flash-success">Password reset successfully. <a href="/login">Log in now</a>.</div>`,
     );
 
-    return c.html(renderHTMLGeneral('Reset password | exotext', inner, false, { footer: false }));
+    return c.html(
+        renderHTMLGeneral('Reset password | exotext', inner, false, {
+            footer: false,
+        }),
+    );
 };
 
 export const handleSignup = async (c: Context) => {
@@ -407,7 +414,11 @@ export const handleSignup = async (c: Context) => {
 
     </div>
     `;
-    return c.html(renderHTMLGeneral('Create account | exotext', raw(inner), false, { footer: false }));
+    return c.html(
+        renderHTMLGeneral('Create account | exotext', raw(inner), false, {
+            footer: false,
+        }),
+    );
 };
 
 export const handleLoginPOST = async (c: Context) => {
