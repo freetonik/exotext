@@ -20,7 +20,6 @@ export const renderPostEditor = (postId?: number, title = '', content = '', slug
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js" integrity="sha512-8RnEqURPUc5aqFEN04aQEiPlSAdE0jlFS/9iGgUyNtwFnSKCXhmB6ZTNl7LnDtDWKabJIASzXrzD0K+LYexU9g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/default.min.css" integrity="sha512-hasIneQUHlh06VNBe7f6ZcHmeRTLIaQWFd43YriJ0UND19bvYRauxthDg8E4eVNPm9bRUhr5JGeqH7FRFXQu5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" integrity="sha512-6yoqbrcLAHDWAdQmiRlHG4+m0g/CT/V9AGyxabG8j7Jk8j3r3K6due7oqpiRMZqcYe9WM2gPcaNNxnl2ux+3tA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js" integrity="sha512-LQNxIMR5rXv7o+b1l8+N1EZMfhG7iFZ9HhnbJkTp4zjNr5Wvst75AqUeFDxeRUa7l5vEDyUiAip//r+EFLLCyA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -50,10 +49,7 @@ export const renderPostEditor = (postId?: number, title = '', content = '', slug
             </div>
 
         <div class="publishing-controls">
-            <div class="url-input-container">
-                <span class="url-prefix">rakhim.exotext.com/</span>
-                <input id="post-slug" name="post-slug" type="text" class="url-suffix" placeholder="slug" value="${slug}">
-            </div>
+            <input id="post-slug" name="post-slug" type="text" class="url-suffix" placeholder="slug" value="${slug}">
 
             <div class="buttons">
                 <button type="button" class="button button-secondary" id="preview-link">Preview</button>

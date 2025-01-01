@@ -15,34 +15,23 @@ export const renderedCSS = raw(`
     --button-secondary-bg: #f2f2f2;
 
     --color-border: #ddd;
-    --color-link: #333;
-    --code-bg: #f5f5f5;
-    --table-stripe: #f8f8f8;
+    --color-link: #093795;
+    --code-bg: #e3e1e1;
 
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --color-text: #e0e0e0;
-        --color-secondary: #999;
-        --color-bg: #313030;
-        --color-success: #53be7e;
-        --color-warning: #851d27;
+        --color-text: #d8dee9;
+        --color-secondary: #cdd3de;
+        --color-bg: #2e3440;
 
         --button-secondary-bg: #252525;
 
         --color-border: #ddd;
-        --color-link: #ccc;
-        --code-bg: #252525;
-        --table-stripe: #222;
+        --color-link: #6fc8ff;
+        --code-bg: #0c1117;
     }
-
-    .hljs {
-        /* Override highlight.js theme for dark mode */
-        background: var(--code-bg) !important;
-        color: #e0e0e0 !important;
-    }
-
 }
 
 *,
@@ -228,7 +217,7 @@ input[type="submit"].button-secondary:hover,
     padding: 1rem;
     text-align: center;
     margin: 2rem 0;
-    background: var(--color-border);
+    border: 2px solid var(--color-border);
 }
 
 .flash a {
@@ -238,12 +227,12 @@ input[type="submit"].button-secondary:hover,
 
 .flash-success {
     background: var(--color-success);
-    color: var(--code-bg);
+    color: white;
 }
 
 .flash-warning {
     background: var(--color-warning);
-    color: var(--code-bg);
+    color: white;
 }
 
 
@@ -341,7 +330,7 @@ article p {
 }
 
 article a {
-    color: var(--text-color);
+    color: var(--color-link);
 }
 
 article ul,
@@ -356,7 +345,6 @@ article li+li {
 
 /* Code */
 article pre {
-    background: var(--code-bg);
     overflow-x: auto;
     border: 1px solid var(--color-border);
 }
@@ -367,8 +355,9 @@ article code {
 }
 
 article p code {
-    background: var(--code-bg);
     padding: 0.2rem 0.4rem;
+    background: var(--code-bg);
+    border-radius: 0.25em;
 }
 
 /* Images */
@@ -408,10 +397,6 @@ article th {
     font-family: monospace;
     font-weight: normal;
     letter-spacing: 0.05em;
-}
-
-article tr:nth-child(even) {
-    background: var(--table-stripe);
 }
 
 
@@ -471,7 +456,7 @@ article tr:nth-child(even) {
     padding: 0.2rem 0.5rem;
     border-radius: 3px;
     background: var(--color-border);
-    color: var(--color-secondary);
+    color: black;
 }
 
 .label.label-inline {
@@ -484,12 +469,12 @@ article tr:nth-child(even) {
 
 .label.label-green {
     background: var(--color-success);
-    color: var(--color-bg);
+    color: white;
 }
 
 .label.label-red {
     background: var(--color-warning);
-    color: var(--color-bg);
+    color: white;
 }
 
 /* Blogs List */
@@ -517,8 +502,6 @@ article tr:nth-child(even) {
 .blog-url:hover {
     color: var(--text-color);
 }
-
-
 
 /* Footer */
 footer {
@@ -680,6 +663,10 @@ footer a {
     padding: 0.5em;
 }
 
+.cm-s-nord span.cm-comment {
+    color: var(--color-text);
+}
+
 .overlay {
     position: fixed;
     top: 0;
@@ -708,135 +695,283 @@ footer a {
 }
 
 /* HIGHLIGHT.JS */
-pre code.hljs {
-    display: block;
-    overflow-x: auto;
-    padding: 1em
+@media (prefers-color-scheme: light) {
+    pre code.hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 1em
+    }
+
+    code.hljs {
+        padding: 3px 5px
+    }
+
+    /*!
+        Theme: GitHub
+        Description: Light theme as seen on github.com
+        Author: github.com
+        Maintainer: @Hirse
+        Updated: 2021-05-15
+
+        Outdated base version: https://github.com/primer/github-syntax-light
+        Current colors taken from GitHub's CSS
+      */
+    .hljs {
+        color: #24292e;
+        background: #ffffff
+    }
+
+    .hljs-doctag,
+    .hljs-keyword,
+    .hljs-meta .hljs-keyword,
+    .hljs-template-tag,
+    .hljs-template-variable,
+    .hljs-type,
+    .hljs-variable.language_ {
+        /* prettylights-syntax-keyword */
+        color: #d73a49
+    }
+
+    .hljs-title,
+    .hljs-title.class_,
+    .hljs-title.class_.inherited__,
+    .hljs-title.function_ {
+        /* prettylights-syntax-entity */
+        color: #6f42c1
+    }
+
+    .hljs-attr,
+    .hljs-attribute,
+    .hljs-literal,
+    .hljs-meta,
+    .hljs-number,
+    .hljs-operator,
+    .hljs-variable,
+    .hljs-selector-attr,
+    .hljs-selector-class,
+    .hljs-selector-id {
+        /* prettylights-syntax-constant */
+        color: #005cc5
+    }
+
+    .hljs-regexp,
+    .hljs-string,
+    .hljs-meta .hljs-string {
+        /* prettylights-syntax-string */
+        color: #032f62
+    }
+
+    .hljs-built_in,
+    .hljs-symbol {
+        /* prettylights-syntax-variable */
+        color: #e36209
+    }
+
+    .hljs-comment,
+    .hljs-code,
+    .hljs-formula {
+        /* prettylights-syntax-comment */
+        color: #6a737d
+    }
+
+    .hljs-name,
+    .hljs-quote,
+    .hljs-selector-tag,
+    .hljs-selector-pseudo {
+        /* prettylights-syntax-entity-tag */
+        color: #22863a
+    }
+
+    .hljs-subst {
+        /* prettylights-syntax-storage-modifier-import */
+        color: #24292e
+    }
+
+    .hljs-section {
+        /* prettylights-syntax-markup-heading */
+        color: #005cc5;
+        font-weight: bold
+    }
+
+    .hljs-bullet {
+        /* prettylights-syntax-markup-list */
+        color: #735c0f
+    }
+
+    .hljs-emphasis {
+        /* prettylights-syntax-markup-italic */
+        color: #24292e;
+        font-style: italic
+    }
+
+    .hljs-strong {
+        /* prettylights-syntax-markup-bold */
+        color: #24292e;
+        font-weight: bold
+    }
+
+    .hljs-addition {
+        /* prettylights-syntax-markup-inserted */
+        color: #22863a;
+        background-color: #f0fff4
+    }
+
+    .hljs-deletion {
+        /* prettylights-syntax-markup-deleted */
+        color: #b31d28;
+        background-color: #ffeef0
+    }
+
+    .hljs-char.escape_,
+    .hljs-link,
+    .hljs-params,
+    .hljs-property,
+    .hljs-punctuation,
+    .hljs-tag {
+        /* purposely ignored */
+
+    }
 }
 
-code.hljs {
-    padding: 3px 5px
+@media (prefers-color-scheme: dark) {
+    pre code.hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 1em
+    }
+
+    code.hljs {
+        padding: 3px 5px
+    }
+
+    /*!
+        Theme: GitHub Dark
+        Description: Dark theme as seen on github.com
+        Author: github.com
+        Maintainer: @Hirse
+        Updated: 2021-05-15
+
+        Outdated base version: https://github.com/primer/github-syntax-dark
+        Current colors taken from GitHub's CSS
+      */
+    .hljs {
+        color: #c9d1d9;
+        background: #0d1117
+    }
+
+    .hljs-doctag,
+    .hljs-keyword,
+    .hljs-meta .hljs-keyword,
+    .hljs-template-tag,
+    .hljs-template-variable,
+    .hljs-type,
+    .hljs-variable.language_ {
+        /* prettylights-syntax-keyword */
+        color: #ff7b72
+    }
+
+    .hljs-title,
+    .hljs-title.class_,
+    .hljs-title.class_.inherited__,
+    .hljs-title.function_ {
+        /* prettylights-syntax-entity */
+        color: #d2a8ff
+    }
+
+    .hljs-attr,
+    .hljs-attribute,
+    .hljs-literal,
+    .hljs-meta,
+    .hljs-number,
+    .hljs-operator,
+    .hljs-variable,
+    .hljs-selector-attr,
+    .hljs-selector-class,
+    .hljs-selector-id {
+        /* prettylights-syntax-constant */
+        color: #79c0ff
+    }
+
+    .hljs-regexp,
+    .hljs-string,
+    .hljs-meta .hljs-string {
+        /* prettylights-syntax-string */
+        color: #a5d6ff
+    }
+
+    .hljs-built_in,
+    .hljs-symbol {
+        /* prettylights-syntax-variable */
+        color: #ffa657
+    }
+
+    .hljs-comment,
+    .hljs-code,
+    .hljs-formula {
+        /* prettylights-syntax-comment */
+        color: #8b949e
+    }
+
+    .hljs-name,
+    .hljs-quote,
+    .hljs-selector-tag,
+    .hljs-selector-pseudo {
+        /* prettylights-syntax-entity-tag */
+        color: #7ee787
+    }
+
+    .hljs-subst {
+        /* prettylights-syntax-storage-modifier-import */
+        color: #c9d1d9
+    }
+
+    .hljs-section {
+        /* prettylights-syntax-markup-heading */
+        color: #1f6feb;
+        font-weight: bold
+    }
+
+    .hljs-bullet {
+        /* prettylights-syntax-markup-list */
+        color: #f2cc60
+    }
+
+    .hljs-emphasis {
+        /* prettylights-syntax-markup-italic */
+        color: #c9d1d9;
+        font-style: italic
+    }
+
+    .hljs-strong {
+        /* prettylights-syntax-markup-bold */
+        color: #c9d1d9;
+        font-weight: bold
+    }
+
+    .hljs-addition {
+        /* prettylights-syntax-markup-inserted */
+        color: #aff5b4;
+        background-color: #033a16
+    }
+
+    .hljs-deletion {
+        /* prettylights-syntax-markup-deleted */
+        color: #ffdcd7;
+        background-color: #67060c
+    }
+
+    .hljs-char.escape_,
+    .hljs-link,
+    .hljs-params,
+    .hljs-property,
+    .hljs-punctuation,
+    .hljs-tag {
+        /* purposely ignored */
+
+    }
 }
 
-/*!
-    Theme: Default
-    Description: Original highlight.js style
-    Author: (c) Ivan Sagalaev <maniac@softwaremaniacs.org>
-    Maintainer: @highlightjs/core-team
-    Website: https://highlightjs.org/
-    License: see project LICENSE
-    Touched: 2021
-  */
-
-pre code.hljs {
-    display: block;
-    overflow-x: auto;
-    padding: 1em
-}
-
-code.hljs {
-    padding: 3px 5px
-}
-
-/* end baseline CSS */
-.hljs {
-    background: #F3F3F3;
-    color: #444
-}
-
-/* Base color: saturation 0; */
-.hljs-subst {
-    /* default */
-
-}
-
-/* purposely ignored */
-.hljs-formula,
-.hljs-attr,
-.hljs-property,
-.hljs-params {}
-
-.hljs-comment {
-    color: #697070
-}
-
-.hljs-tag,
-.hljs-punctuation {
-    color: #444a
-}
-
-.hljs-tag .hljs-name,
-.hljs-tag .hljs-attr {
-    color: #444
-}
-
-.hljs-keyword,
-.hljs-attribute,
-.hljs-selector-tag,
-.hljs-meta .hljs-keyword,
-.hljs-doctag,
-.hljs-name {
-    font-weight: bold
-}
-
-/* User color: hue: 0 */
-.hljs-type,
-.hljs-string,
-.hljs-number,
-.hljs-selector-id,
-.hljs-selector-class,
-.hljs-quote,
-.hljs-template-tag,
-.hljs-deletion {
-    color: #880000
-}
-
-.hljs-title,
-.hljs-section {
-    color: #880000;
-    font-weight: bold
-}
-
-.hljs-regexp,
-.hljs-symbol,
-.hljs-variable,
-.hljs-template-variable,
-.hljs-link,
-.hljs-selector-attr,
-.hljs-operator,
-.hljs-selector-pseudo {
-    color: #ab5656
-}
-
-/* Language color: hue: 90; */
-.hljs-literal {
-    color: #695
-}
-
-.hljs-built_in,
-.hljs-bullet,
-.hljs-code,
-.hljs-addition {
-    color: #397300
-}
-
-/* Meta color: hue: 200 */
-.hljs-meta {
-    color: #1f7199
-}
-
-.hljs-meta .hljs-string {
-    color: #38a
-}
-
-/* Misc effects */
-.hljs-emphasis {
-    font-style: italic
-}
-
-.hljs-strong {
-    font-weight: bold
-}
+/* ================================================================================================================== */
 
 /* KATEX */
 
