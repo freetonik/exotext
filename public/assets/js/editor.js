@@ -212,6 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             previewContent.innerHTML = ht;
             openOverlay();
+            previewLink.blur();
         } catch (error) {
             console.error('Preview error:', error);
             alert('Failed to generate preview');

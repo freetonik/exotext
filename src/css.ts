@@ -9,6 +9,7 @@ export const renderedCSS = raw(`
     --color-text: #2c353d;
     --color-secondary: #666;
     --color-bg: #fcfcfc;
+    --color-bg-editable: #fcfcfc;
     --color-success: #2d503b;
     --color-warning: #851d27;
 
@@ -26,6 +27,7 @@ export const renderedCSS = raw(`
         --color-text: #e0e0e0;
         --color-secondary: #999;
         --color-bg: #313030;
+        --color-bg-editable: #b4b4b4;
         --color-success: #53be7e;
         --color-warning: #851d27;
 
@@ -647,7 +649,7 @@ footer a {
 .publishing-controls .url-prefix {
     padding: 8px 0 8px 12px;
     background-color: transparent;
-    color: #000;
+    color: var(--color-text);
     user-select: none;
 }
 
@@ -677,6 +679,7 @@ footer a {
     border-radius: 4px;
     font-size: 16px;
     padding: 0.5em;
+    background: var(--color-bg-editable);
 }
 
 .overlay {
@@ -2169,4 +2172,4 @@ code.hljs {
 body {
     counter-reset: katexEqnNo mmlEqnNo;
 }
-`); 
+`);

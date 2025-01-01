@@ -53,7 +53,7 @@ export const renderPostEditor = (postId?: number, title = '', content = '', slug
             </div>
 
             <div class="buttons">
-                <a class="button button-secondary" href="#" id="preview-link">Preview</a>
+                <button type="button" class="button button-secondary" id="preview-link">Preview</button>
                 <input class="button-secondary" type="submit" name="action" value="Save as draft">
                 <input type="submit" name="action" value="Publish">
             </div>
