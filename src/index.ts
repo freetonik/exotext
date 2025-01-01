@@ -106,8 +106,8 @@ subdomainApp.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
 subdomainApp.get('/', handleBlog);
 subdomainApp.post('/', handleBlogPOST); // new item
-subdomainApp.post('/:post_id', handlePostEditPOST);
-subdomainApp.post('/:post_slug/delete', handlePostDeletePOST); // todo: HTTP DELETE
+subdomainApp.post('/:post_id', handlePostEditPOST); // edit item
+subdomainApp.post('/:post_slug/delete', handlePostDeletePOST); // todo: use HTTP DELETE
 subdomainApp.post('/upload', handleUploadImage);
 // subdomainApp.get('/~new', handleNewPost);
 

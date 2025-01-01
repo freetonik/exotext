@@ -1,6 +1,7 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "exotext"
 main = "src/index.ts"
+assets = { directory = "./public/" }
 
 compatibility_flags = [ "nodejs_compat" ]
 compatibility_date = "2024-10-22"
@@ -9,6 +10,7 @@ routes = [
   { pattern = "exotext.com", custom_domain = true },
   { pattern = "*exotext.com/*", zone_name = "exotext.com" }
 ]
+
 
 [placement]
 mode = "smart"
