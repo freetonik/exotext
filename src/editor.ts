@@ -28,6 +28,8 @@ export const renderPostEditor = (postId?: number, title = '', content = '', slug
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.0/lib/marked.umd.min.js" integrity="sha512-0oATHzUMCnInjiTnCGLO89UZaxHjTxLmO6pjgEyEtrENCNm4LbyC7F6T3is+085e4EtOl+mFqwQyR0y6v6aqDQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/marked-highlight/2.2.1/index.umd.min.js" integrity="sha512-T5TNAGHd65imlc6xoRDq9hARHowETqOlOGMJ443E+PohphJHbzPpwQNBtcpmcjmHmQKLctZ/W3H2cY/T8EGDPA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/dist/index.umd.min.js"></script>
 
         <script src="https://cdn.jsdelivr.net/npm/marked-katex-extension@5.1.3/lib/index.umd.min.js"></script>
 

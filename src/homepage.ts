@@ -12,9 +12,8 @@ export const handleHomepage = async (c: Context) => {
     }
     const inner = `
     <style>
-    .intro {
-        margin-bottom: 6rem;
-    }
+    .container{max-width: 680px;}
+    .intro { margin-bottom: 6rem; }
 
     h1.landing {
         font-size: 2.5rem;
@@ -35,11 +34,12 @@ export const handleHomepage = async (c: Context) => {
         grid-template-columns: 1fr;
         gap: 3rem;
     }
-
+    .features a {
+        color: var(--color-link);
+    }
     .feature {
         max-width: 45ch;
     }
-
     .feature h2 {
         font-size: 1rem;
         font-weight: normal;
@@ -48,13 +48,12 @@ export const handleHomepage = async (c: Context) => {
         letter-spacing: 0.05em;
     }
 
-    /* Form */
     .signup {
         margin-bottom: 6rem;
         max-width: 400px;
     }
-    .container{max-width: 680px;}
     </style>
+
     <nav>
         <a href="/" class="logo">EXOTEXT</a>
         <div class="menu">
@@ -97,11 +96,14 @@ export const handleHomepage = async (c: Context) => {
             <h2>FREEDOM</h2>
             <p>Use your custom domain. Export your data in Markdown and fully rendered HTML for easy migration.</p>
         </div>
+        <div class="feature">
+            <h2>FEATURES</h2>
+            <p>KaTeX support, code syntax highlighting, easy image attachments, and more. Our <a href="https://github.com/users/freetonik/projects/6">roadmap is public</a>.</p>
+        </div>
     </section>
 
     <footer>
         <p>Made by <a href="https://hypergraph.fi/">Hypergraph Labs</a></p>
-    </footer>
-        `;
+    </footer>`;
     return c.html(renderHTMLGeneral('Exotext', raw(inner), c.get('USER_LOGGED_IN'), { footer: false }));
 };

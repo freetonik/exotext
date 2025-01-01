@@ -25,7 +25,6 @@ import {
     handlePostSingle,
 } from './blogs';
 import { handleHomepage } from './homepage';
-// import { handleAdmin } from './admin';
 import { renderHTMLGeneral } from './htmltools';
 import {
     adminRequiredMiddleware,
@@ -35,6 +34,7 @@ import {
 } from './middleware';
 import { handleUploadImage } from './upload';
 import { handleWaitlistConfirmed, handleWaitlistRequest } from './waitlist';
+
 // ————————————————————————————————————————————————————————————————>>>>
 
 // main app handles the root paths
@@ -46,7 +46,6 @@ app.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
 app.use('*', authCheckMiddleware);
 app.use('/my/*', authRequiredMiddleware);
-app.use('/admin/*', adminRequiredMiddleware);
 
 const handleNotFound = (c: Context) => {
     return c.html(
@@ -58,7 +57,7 @@ const handleError = (err: Error, c: Context) => {
     return c.html(
         renderHTMLGeneral(
             'Error | exotext',
-            raw(`<div class="flash flash-red">${err}.</div>`),
+            raw(`<div class="flash flash-red">${err}</div>`),
             c.get('USER_LOGGED_IN'),
             {
                 footer: false,
@@ -77,8 +76,6 @@ app.get('/', handleHomepage);
 // app.get('/admin', handleAdmin);
 
 // // NORMAL ROUTES
-// app.get('/feedback', handleFeedback);
-
 app.get('/login', handleLogin);
 app.post('/login', handleLoginPOST);
 app.get('/reset_password', handleResetPassword);
