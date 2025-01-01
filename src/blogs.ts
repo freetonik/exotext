@@ -463,7 +463,8 @@ export const markdownToHTML = async (mdContent: string) => {
 
     marked.use(markedKatex(options));
 
-    const postContentHTML = await marked.parse(mdContent);
+    const preprocessedMd = preProcessMarkdown(mdContent)
+    const postContentHTML = await marked.parse(preprocessedMd);
     return await sanitizeHTML(postContentHTML);
 };
 
@@ -486,3 +487,20 @@ export const invalidatePostCache = async (subdomain: string, postSlug: string) =
         console.error('Cache invalidation error:', error);
     }
 };
+
+function preProcessMarkdown(text:string) {
+    return convertYouTubeUrlToEmbed(text);
+}
+
+function convertYouTubeUrlToEmbed(text:string) {
+    // Match YouTube URLs that are on their own line
+    // - youtube.com/watch?v=VIDEO_ID
+    // - youtu.be/VIDEO_ID
+    // - youtube.com/embed/VIDEO_ID
+    const youtubeRegex = /(?<=\n|^)(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?=\n|$)/g;
+
+    return text.replace(youtubeRegex, (match, videoId:string) => {
+        console.log(match, videoId);
+      return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
+    });
+}
