@@ -9,7 +9,6 @@ export const renderedCSS = raw(`
     --color-text: #2c353d;
     --color-secondary: #666;
     --color-bg: #fcfcfc;
-    --color-bg-editable: #fcfcfc;
     --color-success: #2d503b;
     --color-warning: #851d27;
 
@@ -27,7 +26,6 @@ export const renderedCSS = raw(`
         --color-text: #e0e0e0;
         --color-secondary: #999;
         --color-bg: #313030;
-        --color-bg-editable: #b4b4b4;
         --color-success: #53be7e;
         --color-warning: #851d27;
 
@@ -66,6 +64,7 @@ body {
     background: var(--color-bg);
     font-size: 18px;
     height: 100%;
+    counter-reset: katexEqnNo mmlEqnNo;
 }
 
 blockquote {
@@ -649,7 +648,7 @@ footer a {
 .publishing-controls .url-prefix {
     padding: 8px 0 8px 12px;
     background-color: transparent;
-    color: var(--color-text);
+    color: #000;
     user-select: none;
 }
 
@@ -679,7 +678,6 @@ footer a {
     border-radius: 4px;
     font-size: 16px;
     padding: 0.5em;
-    background: var(--color-bg-editable);
 }
 
 .overlay {
@@ -2169,7 +2167,64 @@ code.hljs {
     padding-left: 2em;
 }
 
-body {
-    counter-reset: katexEqnNo mmlEqnNo;
+.lds-ripple,
+.lds-ripple div {
+    box-sizing: border-box;
 }
-`);
+
+.lds-ripple {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+}
+
+.lds-ripple div {
+    position: absolute;
+    border: 4px solid currentColor;
+    opacity: 1;
+    border-radius: 50%;
+    animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+.lds-ripple div:nth-child(2) {
+    animation-delay: -0.5s;
+}
+
+@keyframes lds-ripple {
+    0% {
+        top: 36px;
+        left: 36px;
+        width: 8px;
+        height: 8px;
+        opacity: 0;
+    }
+
+    4.9% {
+        top: 36px;
+        left: 36px;
+        width: 8px;
+        height: 8px;
+        opacity: 0;
+    }
+
+    5% {
+        top: 36px;
+        left: 36px;
+        width: 8px;
+        height: 8px;
+        opacity: 1;
+    }
+
+    100% {
+        top: 0;
+        left: 0;
+        width: 80px;
+        height: 80px;
+        opacity: 0;
+    }
+}
+`); 

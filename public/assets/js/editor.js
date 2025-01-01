@@ -1,7 +1,9 @@
+const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? true : false;
+
 // Initialize CodeMirror
 const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
     mode: 'markdown',
-    theme: 'default',
+    theme: darkMode ? 'nord' : 'xq-light',
     tabSize: 2,
     autofocus: true,
     spellcheck: true,
@@ -14,6 +16,11 @@ const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
         'Cmd-I': handleItalicToggle,
         'Ctrl-I': handleItalicToggle
     }
+});
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) editor.setOption("theme", 'nord');
+    else editor.setOption("theme", 'xq-light');
 });
 
 // Helper function to check if text contains markdown markers
@@ -88,19 +95,62 @@ function handleItalicToggle(cm) {
 }
 
 // Handle paste event
-editor.on('paste', (cm, e) => {
-    // Check if there's a selection
-    if (cm.somethingSelected()) {
-        const selection = cm.getSelection();
+editor.on('paste', async (cm, e) => {
+    // Prevent default paste behavior
+    e.preventDefault();
 
-        // Get clipboard data
-        const clipboardData = e.clipboardData || window.clipboardData;
+    const clipboardData = e.clipboardData || window.clipboardData;
+    const selection = cm.somethingSelected() ? cm.getSelection() : '';
+
+    // Check for image data in clipboard
+    const hasImage = Array.from(clipboardData.items).some(item => item.type.startsWith('image/'));
+
+    if (hasImage) {
+        // Handle image paste
+        for (const item of clipboardData.items) {
+            if (item.type.startsWith('image/')) {
+                const blob = item.getAsFile();
+                toggleLoadingIndicator(true);
+                try {
+                    // Create FormData and append the blob as an image file
+                    const formData = new FormData();
+                    formData.append('image', blob, 'pasted-image.png');
+
+                    // Use the existing upload endpoint
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.imageUrl) {
+                        // Insert the markdown image syntax at cursor position
+                        const imageMarkdown = `![${selection}](${result.imageUrl})`;
+                        cm.replaceSelection(imageMarkdown);
+                    } else {
+                        console.error('Image upload failed:', result.error);
+                        cm.replaceSelection(result.error || 'Failed to upload image');
+                    }
+                } catch (error) {
+                    console.error('Error uploading pasted image:', error);
+                    cm.replaceSelection('Error uploading image');
+                }
+                toggleLoadingIndicator(false);
+                break; // Only handle the first image
+
+            }
+        }
+    } else {
+        // Handle text paste
         const pastedText = clipboardData.getData('text');
 
-        // Check if pasted text is a URL starting with http
-        if (pastedText.trim().toLowerCase().startsWith('http')) {
-            e.preventDefault();
-            cm.replaceSelection('[' + selection + '](' + pastedText + ')');
+        if (selection && pastedText.trim().toLowerCase().startsWith('http')) {
+            // Convert selected text to markdown link
+            cm.replaceSelection(`[${selection}](${pastedText})`);
+        } else {
+            // Regular text paste
+            cm.replaceSelection(pastedText);
         }
     }
 });
@@ -118,13 +168,9 @@ editor.on('drop', async (cm, event) => {
 
         let formData = new FormData();
         formData.append("image", file);
-        console.log(formData);
-
+        toggleLoadingIndicator(true);
         const response = await fetch('/upload', { method: 'POST', body: formData });
-        const res1 = await response;
-        console.log(res1);
         result = await response.json();
-        console.log(result);
 
         if (result.imageUrl) {
             const imageMarkdown = '![]' + '(' + result.imageUrl + ')';
@@ -138,6 +184,7 @@ editor.on('drop', async (cm, event) => {
     } catch (error) {
         console.error('Error uploading image:', error);
     }
+    toggleLoadingIndicator(false);
 });
 
 // Prevent default drag over behavior
@@ -148,28 +195,25 @@ editor.on('dragover', (cm, event) => {
 const { Marked } = window.marked;
 const {markedHighlight} = globalThis.markedHighlight;
 const marked = new Marked(
-markedHighlight({
-    emptyLangClass: 'hljs',
-    langPrefix: 'hljs language-',
-    highlight(code, lang, info) {
-    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-    return hljs.highlight(code, { language }).value;
-    }
-})
+    markedHighlight({
+        emptyLangClass: 'hljs',
+        langPrefix: 'hljs language-',
+        highlight(code, lang, info) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        return hljs.highlight(code, { language }).value;
+        }
+    })
 );
 
-const katexOptions = {
+marked.use(markedKatex({
     throwOnError: false,
-};
-
-marked.use(markedKatex(katexOptions));
+}));
 
 document.addEventListener('DOMContentLoaded', () => {
     const previewLink = document.getElementById('preview-link');
     const overlay = document.getElementById('preview-overlay');
     const closeButton = document.getElementById('close-preview');
     const previewContent = document.getElementById('preview-content');
-
 
     // Function to close overlay
     const closeOverlay = () => {
@@ -192,8 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         second: 'numeric',
     };
 
-
-    // Preview link click handler
+    // Preview button click handler
     previewLink.addEventListener('click', async (e) => {
         e.preventDefault();
         const postDate = new Date().toLocaleDateString('en-UK', date_format_opts);
@@ -242,11 +285,16 @@ function convertYouTubeUrlToEmbed(text) {
     const youtubeRegex = /(?<=\n|^)(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?=\n|$)/g;
 
     return text.replace(youtubeRegex, (match, videoId) => {
-      // Create responsive embed wrapper with 16:9 aspect ratio
-      return `
-<p>
-    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/HjSyYZ5M2H8?si=${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-</p>`;
+      return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
     });
-  }
+}
 
+function toggleLoadingIndicator(show) {
+    if (show) {
+        document.getElementById('lds-ripple').style.display = 'block';
+        setTimeout(() => { document.body.style.cursor = 'wait'; }, 0);
+    } else {
+        document.getElementById('lds-ripple').style.display = 'none';
+        setTimeout(() => { document.body.style.cursor = 'initial'; }, 0);
+    }
+}
