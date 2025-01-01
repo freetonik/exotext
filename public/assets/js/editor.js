@@ -14,13 +14,13 @@ const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
         'Cmd-B': handleBoldToggle,
         'Ctrl-B': handleBoldToggle,
         'Cmd-I': handleItalicToggle,
-        'Ctrl-I': handleItalicToggle
-    }
+        'Ctrl-I': handleItalicToggle,
+    },
 });
 
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) editor.setOption("theme", 'nord');
-    else editor.setOption("theme", 'xq-light');
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) editor.setOption('theme', 'nord');
+    else editor.setOption('theme', 'xq-light');
 });
 
 // Helper function to check if text contains markdown markers
@@ -66,18 +66,15 @@ function surroundSelection(cm, markers, keepSelection = true) {
             let newStart = from.ch - markers.length;
             let newEnd = to.ch + markers.length;
             if (newStart >= 0 && newEnd <= line.length) {
-                cm.replaceRange(selection,
-                    {line: from.line, ch: newStart},
-                    {line: to.line, ch: newEnd}
-                );
+                cm.replaceRange(selection, { line: from.line, ch: newStart }, { line: to.line, ch: newEnd });
             }
         } else {
             // Add new markers
             cm.replaceSelection(markers + selection + markers);
             if (keepSelection) {
                 cm.setSelection(
-                    {line: from.line, ch: from.ch + markers.length},
-                    {line: to.line, ch: to.ch + markers.length}
+                    { line: from.line, ch: from.ch + markers.length },
+                    { line: to.line, ch: to.ch + markers.length },
                 );
             }
         }
@@ -103,7 +100,7 @@ editor.on('paste', async (cm, e) => {
     const selection = cm.somethingSelected() ? cm.getSelection() : '';
 
     // Check for image data in clipboard
-    const hasImage = Array.from(clipboardData.items).some(item => item.type.startsWith('image/'));
+    const hasImage = Array.from(clipboardData.items).some((item) => item.type.startsWith('image/'));
 
     if (hasImage) {
         // Handle image paste
@@ -119,7 +116,7 @@ editor.on('paste', async (cm, e) => {
                     // Use the existing upload endpoint
                     const response = await fetch('/upload', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
                     });
 
                     const result = await response.json();
@@ -138,7 +135,6 @@ editor.on('paste', async (cm, e) => {
                 }
                 toggleLoadingIndicator(false);
                 break; // Only handle the first image
-
             }
         }
     } else {
@@ -165,9 +161,8 @@ editor.on('drop', async (cm, event) => {
     }
 
     try {
-
         let formData = new FormData();
-        formData.append("image", file);
+        formData.append('image', file);
         toggleLoadingIndicator(true);
         const response = await fetch('/upload', { method: 'POST', body: formData });
         result = await response.json();
@@ -179,8 +174,6 @@ editor.on('drop', async (cm, event) => {
             cm.replaceRange(result.error, cm.getCursor());
             codeElement.textContent = result.error;
         }
-
-
     } catch (error) {
         console.error('Error uploading image:', error);
     }
@@ -193,21 +186,26 @@ editor.on('dragover', (cm, event) => {
 });
 
 const { Marked } = window.marked;
-const {markedHighlight} = globalThis.markedHighlight;
+const { markedHighlight } = globalThis.markedHighlight;
 const marked = new Marked(
     markedHighlight({
         emptyLangClass: 'hljs',
         langPrefix: 'hljs language-',
         highlight(code, lang, info) {
-        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-        return hljs.highlight(code, { language }).value;
-        }
-    })
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        },
+    }),
 );
 
-marked.use(markedKatex({
-    throwOnError: false,
-}));
+marked.use(
+    markedKatex({
+        throwOnError: false,
+    }),
+);
+
+marked.use(markedFootnote());
+marked.use(markedAlert());
 
 document.addEventListener('DOMContentLoaded', () => {
     const previewLink = document.getElementById('preview-link');
@@ -251,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${postDate}
             </time> </header> <div class="post-content">
             ${marked.parse(preprocessedMarkdown, { sanitize: true })}
-            </div> </article>`
+            </div> </article>`;
 
             previewContent.innerHTML = ht;
             openOverlay();
@@ -282,19 +280,24 @@ function convertYouTubeUrlToEmbed(text) {
     // - youtube.com/watch?v=VIDEO_ID
     // - youtu.be/VIDEO_ID
     // - youtube.com/embed/VIDEO_ID
-    const youtubeRegex = /(?<=\n|^)(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?=\n|$)/g;
+    const youtubeRegex =
+        /(?<=\n|^)(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?=\n|$)/g;
 
     return text.replace(youtubeRegex, (match, videoId) => {
-      return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
+        return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
     });
 }
 
 function toggleLoadingIndicator(show) {
     if (show) {
         document.getElementById('lds-ripple').style.display = 'block';
-        setTimeout(() => { document.body.style.cursor = 'wait'; }, 0);
+        setTimeout(() => {
+            document.body.style.cursor = 'wait';
+        }, 0);
     } else {
         document.getElementById('lds-ripple').style.display = 'none';
-        setTimeout(() => { document.body.style.cursor = 'initial'; }, 0);
+        setTimeout(() => {
+            document.body.style.cursor = 'initial';
+        }, 0);
     }
 }
