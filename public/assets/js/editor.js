@@ -272,20 +272,54 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function preProcessMarkdown(text) {
-    return convertYouTubeUrlToEmbed(text);
+    return convertYouTubeLinksToEmbeds(text);
 }
 
-function convertYouTubeUrlToEmbed(text) {
-    // Match YouTube URLs that are on their own line
-    // - youtube.com/watch?v=VIDEO_ID
-    // - youtu.be/VIDEO_ID
-    // - youtube.com/embed/VIDEO_ID
-    const youtubeRegex =
-        /(?<=\n|^)(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})(?=\n|$)/g;
+function convertYouTubeLinksToEmbeds(text) {
+    // Split the input into lines, preserving empty lines
+    const lines = text.split('\n');
 
-    return text.replace(youtubeRegex, (match, videoId) => {
-        return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
+    // Process each line
+    const processedLines = lines.map((line, index) => {
+        const trimmedLine = line.trim();
+
+        // Skip if line isn't empty but contains more than just a URL
+        if (!trimmedLine || trimmedLine.includes(' ')) {
+            return line;
+        }
+
+        // Check if line is isolated by newlines or is first/last line
+        const isFirstLine = index === 0;
+        const isLastLine = index === lines.length - 1;
+        const hasPrecedingNewline = isFirstLine || lines[index - 1].trim() === '';
+        const hasFollowingNewline = isLastLine || lines[index + 1].trim() === '';
+
+        if (!hasPrecedingNewline || !hasFollowingNewline) {
+            return line;
+        }
+
+        try {
+            const url = new URL(trimmedLine);
+
+            if (url.hostname === 'www.youtube.com' || url.hostname === 'youtube.com') {
+                const videoId = url.searchParams.get('v');
+                if (videoId) {
+                    return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
+                }
+            } else if (url.hostname === 'youtu.be') {
+                const videoId = url.pathname.slice(1);
+                if (videoId) {
+                    return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
+                }
+            }
+        } catch (e) {
+            return line;
+        }
+
+        return line;
     });
+
+    return processedLines.join('\n');
 }
 
 function toggleLoadingIndicator(show) {

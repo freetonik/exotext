@@ -127,12 +127,12 @@ export const sanitizeHTML = async (contentBlock: string): Promise<string> => {
                 }
 
                 // Remove all iframes except for YouTube
-                if (element.tagName === 'iframe') {
-                    const src = element.getAttribute('src');
-                    if (!src || (!src.includes('youtube.com/embed/') && !src.includes('youtube-nocookie.com/embed/'))) {
-                        element.remove();
-                    }
-                }
+                // if (element.tagName === 'iframe') {
+                //     const src = element.getAttribute('src');
+                //     if (!src || (!src.includes('youtube.com/embed/') && !src.includes('youtube-nocookie.com/embed/'))) {
+                //         element.remove();
+                //     }
+                // }
             },
         })
         .transform(new Response(contentBlock))
