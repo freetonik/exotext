@@ -2,9 +2,7 @@ import type { Context } from 'hono';
 import { nanoid } from 'nanoid';
 
 export const handleUploadImage = async (c: Context) => {
-    console.log(c.req.header);
     const contentType = c.req.header('Content-Type') || '';
-    console.log(contentType);
     if (!contentType.includes('multipart/form-data')) {
         return c.json({ error: 'Invalid content type' });
     }
