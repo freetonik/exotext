@@ -35,7 +35,6 @@ export const handleBlog = async (c: Context) => {
     }
 
     const userId = c.get('USER_ID') || -1;
-    
 
     const batch = await c.env.DB.batch([
         c.env.DB.prepare(`
@@ -52,6 +51,7 @@ export const handleBlog = async (c: Context) => {
     ]);
 
     if (!batch[0].results.length) return c.notFound();
+    
     const blog = batch[0].results[0];
     const posts = batch[1].results;
     const userIsOwner = userLoggedIn && userId === blog.user_id;
@@ -63,7 +63,6 @@ export const handleBlog = async (c: Context) => {
             ${userIsOwner ? `<a class="muted no-color" href="/~/edit_description">[edit]</a>` : ''}
             </p>
         </header>
-
     `;
 
     let quickDraft = '';
@@ -123,7 +122,7 @@ export const handleBlog = async (c: Context) => {
             const cacheResponse = new Response(html, {
                 headers: {
                     'Content-Type': 'text/html;charset=UTF-8',
-                    'Cache-Control': 'public, max-age=31536000', // Cache for 1 hour
+                    'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
                 },
             });
             await cache.put(cacheKey, cacheResponse);
@@ -281,7 +280,7 @@ export const handlePostSingle = async (c: Context) => {
             const cacheResponse = new Response(html, {
                 headers: {
                     'Content-Type': 'text/html;charset=UTF-8',
-                    'Cache-Control': 'public, max-age=31536000', // Cache for 1 hour
+                    'Cache-Control': 'public, max-age=31536000', // Cache for 1 year
                 },
             });
             await cache.put(cacheKey, cacheResponse);

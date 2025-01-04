@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import { getCookie } from 'hono/cookie';
 
 // Set user_id and username in context if user is logged in
-export async function authCheckMiddleware(c: Context, next) {
+export async function authCheckMiddleware(c: Context, next: () => Promise<void>) {
     const sessionKey = getCookie(c, 'exotext_session');
     if (sessionKey) {
         const kv_value = await c.env.SESSIONS_KV.get(sessionKey);
@@ -26,13 +26,13 @@ export async function authCheckMiddleware(c: Context, next) {
 }
 
 // User must be logged in
-export async function authRequiredMiddleware(c: Context, next: () => any) {
+export async function authRequiredMiddleware(c: Context, next: () => Promise<void>) {
     if (!c.get('USER_ID')) return c.redirect('/login');
     await next();
 }
 
 // User must be logged in and be admin
-export async function adminRequiredMiddleware(c: Context, next: () => any) {
+export async function adminRequiredMiddleware(c: Context, next: () => Promise<void>) {
     if (!c.get('USER_IS_ADMIN')) {
         c.status(401);
         return c.body('Unauthorized');
@@ -40,7 +40,7 @@ export async function adminRequiredMiddleware(c: Context, next: () => any) {
     await next();
 }
 
-export async function subdomainMiddleware(c: Context, next: () => any) {
+export async function subdomainMiddleware(c: Context, next: () => Promise<void>) {
     const host = c.req.raw.headers.get('host');
     if (host) {
         const subdomain = host.split('.')[0];

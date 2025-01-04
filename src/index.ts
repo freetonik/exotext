@@ -1,3 +1,4 @@
+import { csrf } from 'hono/csrf'
 import type { Context, Env } from 'hono';
 import { Hono } from 'hono';
 import { raw } from 'hono/html';
@@ -44,6 +45,7 @@ const app = new Hono<{ Bindings: CloudflareBindings }>({
     strict: false,
 });
 
+app.use(csrf())
 app.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
 app.use('*', authCheckMiddleware);
@@ -98,6 +100,7 @@ app.get('/waitlist/confirmed', handleWaitlistConfirmed);
 const subdomainApp = new Hono<{ Bindings: CloudflareBindings }>({
     strict: false,
 });
+subdomainApp.use(csrf());
 subdomainApp.use('*', authCheckMiddleware);
 subdomainApp.use('*', subdomainMiddleware);
 
