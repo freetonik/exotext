@@ -40,7 +40,7 @@ export const renderHTMLGeneral = (
     </html>`;
 };
 
-export const renderHTMLBlog = (title: string, inner: string, user_logged_in: boolean) => {
+export const renderHTMLBlog = (title: string, inner: string) => {
     return html`
     <!DOCTYPE html>
     <html lang="en">
@@ -64,35 +64,4 @@ export const renderHTMLBlog = (title: string, inner: string, user_logged_in: boo
 
     </body>
     </html>`;
-};
-
-const dateFormatOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-
-export const renderItemShort = (
-    item_sqid: string,
-    title: string,
-    url: string,
-    feed_title?: string,
-    feed_sqid?: string,
-    pub_date?: string,
-    summary?: string,
-) => {
-    const divClass = summary ? 'item-short' : 'item-tiny';
-    const postDate = pub_date ? `${new Date(pub_date).toLocaleDateString('en-UK', dateFormatOptions)} | ` : '';
-    const feedLink = feed_title ? `<a href="/blogs/${feed_sqid}">${feed_title}</a> | ` : '';
-    const summaryContent = summary ? `<p class="item-summary">${summary}</p>` : '';
-
-    return `
-    <div class="${divClass}">
-        <a href="/items/${item_sqid}" class="bold no-color no-underline">${title}</a> <br>
-        <div class="muted">
-            <small>
-                ${feedLink}
-                <span>${postDate}</span>
-                <a class="no-underline no-color" href="${url}">original</a>
-            </small>
-        </div>
-        ${summaryContent}
-    </div>
-    `;
 };

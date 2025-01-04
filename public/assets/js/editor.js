@@ -1,4 +1,4 @@
-const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? true : false;
+const darkMode = !!window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 // Initialize CodeMirror
 const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
@@ -54,17 +54,17 @@ function surroundSelection(cm, markers, keepSelection = true) {
         cm.replaceSelection(newText);
     } else {
         // Check if selection is part of a larger marked text
-        let startSearch = Math.max(0, selectionStart - markers.length);
-        let endSearch = Math.min(line.length, selectionEnd + markers.length);
-        let surroundingText = line.substring(startSearch, endSearch);
+        const startSearch = Math.max(0, selectionStart - markers.length);
+        const endSearch = Math.min(line.length, selectionEnd + markers.length);
+        const surroundingText = line.substring(startSearch, endSearch);
 
-        let markersBefore = surroundingText.substring(0, markers.length) === markers;
-        let markersAfter = surroundingText.substring(surroundingText.length - markers.length) === markers;
+        const markersBefore = surroundingText.substring(0, markers.length) === markers;
+        const markersAfter = surroundingText.substring(surroundingText.length - markers.length) === markers;
 
         if (markersBefore && markersAfter) {
             // Remove markers from the larger text
-            let newStart = from.ch - markers.length;
-            let newEnd = to.ch + markers.length;
+            const newStart = from.ch - markers.length;
+            const newEnd = to.ch + markers.length;
             if (newStart >= 0 && newEnd <= line.length) {
                 cm.replaceRange(selection, { line: from.line, ch: newStart }, { line: to.line, ch: newEnd });
             }
@@ -161,14 +161,14 @@ editor.on('drop', async (cm, event) => {
     }
 
     try {
-        let formData = new FormData();
+        const formData = new FormData();
         formData.append('image', file);
         toggleLoadingIndicator(true);
         const response = await fetch('/upload', { method: 'POST', body: formData });
         result = await response.json();
 
         if (result.imageUrl) {
-            const imageMarkdown = '![]' + '(' + result.imageUrl + ')';
+            const imageMarkdown = `![](${result.imageUrl})`;
             cm.replaceRange(imageMarkdown, cm.getCursor());
         } else {
             cm.replaceRange(result.error, cm.getCursor());

@@ -1,9 +1,6 @@
 import { renderedCSS } from './css';
 
-export const renderPostEditor = (postId?: number, title = '', content = '', slug = '', blog_title = '') => {
-    // if postId is provided, we are editing an existing post
-    // otherwise, we are creating a new post
-    const actionTarget = postId ? `/${postId}` : '/';
+export const renderPostEditor = (postId: number, title = '', content = '', slug = '', blog_title = '') => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -39,8 +36,7 @@ export const renderPostEditor = (postId?: number, title = '', content = '', slug
     <body>
 
     <div class="editor-container">
-
-        <form style="height: 100%; display: flex; flex-direction: column;" method="POST" action="${actionTarget}" >
+        <form style="height: 100%; display: flex; flex-direction: column;" method="POST" action="/${postId}" >
 
             <div class="title-input">
                 <input id="post-title" name="post-title" type="text" placeholder="Post title" value="${title}">
@@ -50,15 +46,16 @@ export const renderPostEditor = (postId?: number, title = '', content = '', slug
                 <textarea id="editor" name="post-content" placeholder="Here we go..." rows=12>${content}</textarea>
             </div>
 
-        <div class="publishing-controls">
-            <input id="post-slug" name="post-slug" type="text" class="url-suffix" placeholder="slug" value="${slug}">
+            <div class="publishing-controls">
+                <input id="post-slug" name="post-slug" type="text" class="url-suffix" placeholder="slug" value="${slug}">
 
-            <div class="buttons">
-                <button type="button" class="button button-secondary" id="preview-link">Preview</button>
-                <input class="button-secondary" type="submit" name="action" value="Save as draft">
-                <input type="submit" name="action" value="Publish">
+                <div class="buttons">
+                    <button type="button" class="button button-secondary" id="preview-link">Preview</button>
+                    <input class="button-secondary" type="submit" name="action" value="Save as draft">
+                    <input type="submit" name="action" value="Publish">
+                </div>
             </div>
-        </div>
+        
         <div id="lds-ripple" class="lds-ripple"><div></div><div></div></div>
         </form>
     </div>

@@ -111,7 +111,9 @@ export const sanitizeHTML = async (contentBlock: string): Promise<string> => {
                     'onwaiting',
                     'onwheel',
                 ];
-                dangerousAttributes.forEach((attr) => element.removeAttribute(attr));
+                for (const attr of dangerousAttributes) {
+                    element.removeAttribute(attr);
+                }
 
                 // Sanitize href attributes
                 if (element.tagName === 'a' && element.getAttribute('href')) {
