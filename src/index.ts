@@ -17,6 +17,8 @@ import {
 } from './account';
 import {
     handleBlog,
+    handleBlogDescriptionEditor,
+    handleBlogDescriptionPOST,
     handleBlogPOST,
     handleBlogRSS, // new blog post handler
     handlePostDeletePOST,
@@ -86,7 +88,7 @@ app.post('/signup', handleSignupPOST);
 app.get('/logout', authRequiredMiddleware, handleLogout);
 
 app.get('/my/account', handleMyAccount);
-app.post('/my/account/create_blog', adminRequiredMiddleware, handleNewBlogPost);
+app.post('/my/account/create_blog', adminRequiredMiddleware, handleNewBlog);
 app.post('/my/account/resend_verification_link', handleResentVerificationEmailPOST);
 app.get('/verify_email', handleVerifyEmail);
 
@@ -103,6 +105,9 @@ subdomainApp.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
 subdomainApp.get('/', handleBlog);
 subdomainApp.post('/', handleBlogPOST); // new item
+subdomainApp.get('/~/edit_description', handleBlogDescriptionEditor);
+subdomainApp.post('/~/edit_description', handleBlogDescriptionPOST);
+
 subdomainApp.post('/upload', handleUploadImage);
 subdomainApp.post('/:post_id', handlePostEditPOST); // edit item
 subdomainApp.post('/:post_slug/delete', handlePostDeletePOST); // todo: use HTTP DELETE

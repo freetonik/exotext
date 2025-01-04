@@ -684,6 +684,22 @@ footer a {
     margin: 0 auto;
 }
 
+/* UTILS */
+
+.muted {
+    opacity: 0.6;
+}
+
+.no-color {
+    color: inherit;
+    text-decoration: none;
+}
+
+.no-color:hover {
+    text-decoration: underline;
+}
+
+
 /* HIGHLIGHT.JS */
 @media (prefers-color-scheme: light) {
     pre code.hljs {

@@ -35,10 +35,11 @@ export const handleBlog = async (c: Context) => {
     }
 
     const userId = c.get('USER_ID') || -1;
+    
 
     const batch = await c.env.DB.batch([
         c.env.DB.prepare(`
-        SELECT title, user_id, slug
+        SELECT title, user_id, slug, description
         FROM blogs
         WHERE blogs.slug = ?`).bind(subdomain),
 
@@ -53,19 +54,21 @@ export const handleBlog = async (c: Context) => {
     if (!batch[0].results.length) return c.notFound();
     const blog = batch[0].results[0];
     const posts = batch[1].results;
+    const userIsOwner = userLoggedIn && userId === blog.user_id;
 
     let list = `
         <header class="blog-header">
             <h1>${blog.title}</h1>
-
-            <p class="blog-description">Observations on technology, literature, and the spaces between. Written sporadically, with care.</p>
+            <p class="blog-description">${blog.description}
+            ${userIsOwner ? `<a class="muted no-color" href="/~/edit_description">[edit]</a>` : ''}
+            </p>
         </header>
 
     `;
 
     let quickDraft = '';
 
-    if (userLoggedIn && userId === blog.user_id) {
+    if (userIsOwner) {
         quickDraft = `
         <details class="quick-draft">
             <summary>Quick draft</summary>
@@ -98,7 +101,7 @@ export const handleBlog = async (c: Context) => {
         if (post.status !== 'public' && (!userLoggedIn || userId !== blog.user_id)) continue;
         const postDate = formatDate(new Date(post.pub_date));
         let status_block = '';
-        if (userLoggedIn && userId === blog.user_id && post.status === 'draft') {
+        if (userIsOwner && post.status === 'draft') {
             status_block = ' <span class="label label-inline">draft</span>';
         }
         list += `
@@ -364,6 +367,70 @@ export const handlePostEditPOST = async (c: Context) => {
     return c.redirect(`/${newSlug}`);
 };
 
+export const handleBlogDescriptionEditor = async (c: Context) => {
+    if (!c.get('USER_LOGGED_IN')) return c.text('Unauthorized', 401);
+    const userId = c.get('USER_ID');
+    const subdomain = c.get('SUBDOMAIN');
+
+    const blog = await c.env.DB.prepare(`
+        SELECT title, user_id, description 
+        FROM blogs
+        WHERE blogs.slug = ?`)
+        .bind(subdomain)
+        .first();
+
+    if (!blog) return c.notFound();
+    if (userId !== blog.user_id) return c.text('Unauthorized', 401);
+
+    const html = `
+        <h1>Edit blog description</h1>
+        <div class="quick-draft">
+        <form method="POST">
+            <div style="margin-bottom:1em;">
+                <textarea name="description" rows="9" style="width:100%;">${blog.description || ''}</textarea>
+            </div>
+            <div class="buttons">
+                <a href="/" class="button button-outline">Cancel</a>
+                <input type="submit" value="Save">
+            </div>
+        </form>
+        </div>
+    `;
+
+    return c.html(renderHTMLBlog(blog.title, raw(html), c.get('USER_LOGGED_IN')));
+};
+
+export const handleBlogDescriptionPOST = async (c: Context) => {
+    if (!c.get('USER_LOGGED_IN')) return c.text('Unauthorized', 401);
+    const userId = c.get('USER_ID');
+    const subdomain = c.get('SUBDOMAIN');
+
+    const blog = await c.env.DB.prepare(`
+        SELECT blog_id, user_id
+        FROM blogs 
+        WHERE blogs.slug = ?`)
+        .bind(subdomain)
+        .first();
+
+    if (!blog) return c.notFound();
+    if (userId !== blog.user_id) return c.text('Unauthorized', 401);
+
+    const body = await c.req.parseBody();
+    const description = body.description?.toString() || '';
+
+    await c.env.DB.prepare(`
+        UPDATE blogs 
+        SET description = ? 
+        WHERE blog_id = ?`)
+        .bind(description, blog.blog_id)
+        .run();
+
+    await invalidateBlogCache(subdomain);
+
+    return c.redirect('/');
+};
+
+
 export const handleBlogRSS = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
 
@@ -409,6 +476,7 @@ export const handleBlogRSS = async (c: Context) => {
 };
 
 export const handlePostDeletePOST = async (c: Context) => {
+    if (!c.get('USER_LOGGED_IN')) return c.text('Unauthorized', 401);
     const userId = c.get('USER_ID') || -1;
     const subdomain = c.get('SUBDOMAIN');
     const slug = c.req.param('post_slug');
@@ -424,7 +492,7 @@ export const handlePostDeletePOST = async (c: Context) => {
 
     const post = postDBEntry.results[0];
 
-    if (!c.get('USER_LOGGED_IN') || userId !== post.user_id) return c.text('Unauthorized', 401);
+    if (userId !== post.user_id) return c.text('Unauthorized', 401);
 
     await c.env.DB.prepare('DELETE FROM posts WHERE post_id = ?').bind(post.post_id).run();
 
@@ -441,10 +509,6 @@ const generate_slug = (title: string) => {
         .replace(/[^a-zA-Z0-9\s]/g, '')
         .replace(/\s+/g, '-')
         .toLowerCase();
-};
-
-export const handleNewPost = async (c: Context) => {
-    return c.html('aaa');
 };
 
 export const markdownToHTML = async (mdContent: string) => {
@@ -520,16 +584,15 @@ function convertYouTubeLinksToEmbeds(text: string): string {
         try {
             const url = new URL(trimmedLine);
 
+            let videoId = null;
             if (url.hostname === 'www.youtube.com' || url.hostname === 'youtube.com') {
-                const videoId = url.searchParams.get('v');
-                if (videoId) {
-                    return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
-                }
+                videoId = url.searchParams.get('v');
             } else if (url.hostname === 'youtu.be') {
-                const videoId = url.pathname.slice(1);
-                if (videoId) {
-                    return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
-                }
+                videoId = url.pathname.slice(1);
+            }
+
+            if (videoId) {
+                return `<p><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${videoId}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media;   gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></p>`;
             }
         } catch (e) {
             return line;
