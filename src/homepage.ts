@@ -63,7 +63,10 @@ export const handleHomepage = async (c: Context) => {
 
     <section class="intro">
         <h1>A blogging platform<br>for the craft of clarity and focus.</h1>
-        <p class="lead">Exotext gets out of your way and lets you breath. A modern, minimalistic medium for your beautiful words.</p>
+        <p class="lead">Exotext gets out of your way and lets you breath. A modern, minimalistic medium for your beautiful words.
+        <a href="https://rakhim.exotext.com/">View example blog</a>.
+        </p>
+
     </section>
 
     <section class="signup">
