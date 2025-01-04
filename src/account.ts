@@ -628,7 +628,7 @@ function checkEmail(email: string) {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
 }
 
-export const handleNewBlogPost = async (c: Context) => {
+export const handleNewBlog = async (c: Context) => {
     const body = await c.req.parseBody();
     const slug = body.address.toString();
     if (!slug) throw new Error('Address is required');

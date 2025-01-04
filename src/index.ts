@@ -6,7 +6,7 @@ import {
     handleLoginPOST,
     handleLogout,
     handleMyAccount,
-    handleNewBlogPost,
+    handleNewBlog,
     handleResentVerificationEmailPOST,
     handleResetPassword,
     handleResetPasswordPOST,
