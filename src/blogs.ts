@@ -112,7 +112,7 @@ export const handleBlog = async (c: Context) => {
     }
     list += '</section>';
 
-    const html = renderHTMLBlog(`${blog.title}`, raw(list), userLoggedIn);
+    const html = renderHTMLBlog(`${blog.title}`, raw(list));
     const response = c.html(html);
 
     if (!userLoggedIn) {
