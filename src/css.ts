@@ -643,6 +643,10 @@ footer a {
     gap: .5rem;
 }
 
+.publishing-controls-details {
+    margin-top: .5rem;
+}
+
 
 .CodeMirror {
     font-family: var(--font-monospace);

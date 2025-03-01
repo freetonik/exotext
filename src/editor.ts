@@ -55,8 +55,14 @@ export const renderPostEditor = (postId: number, title = '', content = '', slug 
                     <input type="submit" name="action" value="Publish">
                 </div>
             </div>
-        
-        <div id="lds-ripple" class="lds-ripple"><div></div><div></div></div>
+
+            <details class="publishing-controls-details">
+                <summary>Customize publication date</summary>
+                <input type="datetime-local" id="datetime" name="datetime">
+            </details>
+
+            <div id="lds-ripple" class="lds-ripple"></div>
+
         </form>
     </div>
 

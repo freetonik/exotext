@@ -51,7 +51,7 @@ export const handleBlog = async (c: Context) => {
     ]);
 
     if (!batch[0].results.length) return c.notFound();
-    
+
     const blog = batch[0].results[0];
     const posts = batch[1].results;
     const userIsOwner = userLoggedIn && userId === blog.user_id;
@@ -161,6 +161,10 @@ export const handleBlogPOST = async (c: Context) => {
     if (!title.length) title = truncate(postContent, 128);
     const postContentHTML = await markdownToHTML(postContent);
 
+    const datetime = body.datetime?.toString() || '';
+    let parsedDate = new Date(datetime);
+    if (isNaN(parsedDate.getTime())) parsedDate = new Date();
+
     try {
         let item_slug = generate_slug(title);
 
@@ -172,7 +176,7 @@ export const handleBlogPOST = async (c: Context) => {
             item_slug += `-${Date.now()}`;
         }
 
-        const pubDate = new Date().toISOString();
+        const pubDate = parsedDate.toISOString();
         const requestedAction = body.action.toString().toLowerCase();
 
         await c.env.DB.prepare(
@@ -333,6 +337,9 @@ export const handlePostEditPOST = async (c: Context) => {
     if (!postTitle) return c.text('Post title is required');
     const contentMD = body['post-content'].toString();
     if (!contentMD) return c.text('Post content is required');
+    const datetime = body.datetime?.toString() || '';
+    let parsedDate = new Date(datetime);
+    if (isNaN(parsedDate.getTime())) parsedDate = new Date();
 
     let newSlug = body['post-slug'].toString().toLowerCase();
 
@@ -353,9 +360,9 @@ export const handlePostEditPOST = async (c: Context) => {
     const status = requestedAction === 'publish' ? 'public' : 'draft';
 
     const results = await c.env.DB.prepare(
-        'UPDATE posts SET title = ?, content_md = ?, content_html = ?, status = ?, slug = ? WHERE post_id = ?',
+        'UPDATE posts SET title = ?, content_md = ?, content_html = ?, status = ?, slug = ?, pub_date = ? WHERE post_id = ?',
     )
-        .bind(postTitle, contentMD, contentHTML, status, newSlug, post.post_id)
+        .bind(postTitle, contentMD, contentHTML, status, newSlug, parsedDate.toISOString(), post.post_id)
         .run();
 
     // TODO: actually check if there are errors and show a message without losing state
@@ -372,7 +379,7 @@ export const handleBlogDescriptionEditor = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
 
     const blog = await c.env.DB.prepare(`
-        SELECT title, user_id, description 
+        SELECT title, user_id, description
         FROM blogs
         WHERE blogs.slug = ?`)
         .bind(subdomain)
@@ -396,7 +403,7 @@ export const handleBlogDescriptionEditor = async (c: Context) => {
         </div>
     `;
 
-    return c.html(renderHTMLBlog(blog.title, raw(html), c.get('USER_LOGGED_IN')));
+    return c.html(renderHTMLBlog(blog.title, raw(html)));
 };
 
 export const handleBlogDescriptionPOST = async (c: Context) => {
@@ -406,7 +413,7 @@ export const handleBlogDescriptionPOST = async (c: Context) => {
 
     const blog = await c.env.DB.prepare(`
         SELECT blog_id, user_id
-        FROM blogs 
+        FROM blogs
         WHERE blogs.slug = ?`)
         .bind(subdomain)
         .first();
@@ -418,8 +425,8 @@ export const handleBlogDescriptionPOST = async (c: Context) => {
     const description = body.description?.toString() || '';
 
     await c.env.DB.prepare(`
-        UPDATE blogs 
-        SET description = ? 
+        UPDATE blogs
+        SET description = ?
         WHERE blog_id = ?`)
         .bind(description, blog.blog_id)
         .run();
@@ -428,7 +435,6 @@ export const handleBlogDescriptionPOST = async (c: Context) => {
 
     return c.redirect('/');
 };
-
 
 export const handleBlogRSS = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
