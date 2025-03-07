@@ -8,7 +8,7 @@ import markedKatex from 'marked-katex-extension';
 import RSS from 'rss';
 import { renderPostEditor } from './editor';
 import { renderHTMLBlog } from './htmltools';
-import { sanitizeHTML, truncate } from './utils';
+import { sanitizeHTML, stripTags, truncate } from './utils';
 
 export const handleBlog = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
@@ -37,17 +37,21 @@ export const handleBlog = async (c: Context) => {
     const userId = c.get('USER_ID') || -1;
 
     const batch = await c.env.DB.batch([
-        c.env.DB.prepare(`
-        SELECT title, user_id, slug, description
+        c.env.DB.prepare(
+            `
+        SELECT title, user_id, slug, description_html as description
         FROM blogs
-        WHERE blogs.slug = ?`).bind(subdomain),
+        WHERE blogs.slug = ?`,
+        ).bind(subdomain),
 
-        c.env.DB.prepare(`
+        c.env.DB.prepare(
+            `
         SELECT posts.post_id, posts.title, posts.slug, posts.pub_date, posts.status
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
         WHERE blogs.slug = ?
-        ORDER BY posts.pub_date DESC`).bind(subdomain),
+        ORDER BY posts.pub_date DESC`,
+        ).bind(subdomain),
     ]);
 
     if (!batch[0].results.length) return c.notFound();
@@ -59,7 +63,7 @@ export const handleBlog = async (c: Context) => {
     let list = `
         <header class="blog-header">
             <h1>${blog.title}</h1>
-            <p class="blog-description">${blog.description}
+            <p class="blog-description">${blog.description || ''}
             ${userIsOwner ? `<a class="muted no-color" href="/~/edit_description">[edit]</a>` : ''}
             </p>
         </header>
@@ -301,11 +305,13 @@ export const handlePostEditor = async (c: Context) => {
     const userId = c.get('USER_ID') || -1;
     const post_slug = c.req.param('post_slug');
 
-    const post = await c.env.DB.prepare(`
+    const post = await c.env.DB.prepare(
+        `
         SELECT posts.post_id, posts.slug, posts.title, posts.content_md, posts.content_html, blogs.user_id, blogs.title as blog_title
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
-        WHERE posts.slug = ?`)
+        WHERE posts.slug = ?`,
+    )
         .bind(post_slug)
         .first();
 
@@ -320,12 +326,14 @@ export const handlePostEditPOST = async (c: Context) => {
     const userId = c.get('USER_ID') || -1;
     const postId = c.req.param('post_id');
 
-    const post = await c.env.DB.prepare(`
+    const post = await c.env.DB.prepare(
+        `
         SELECT posts.post_id, posts.slug, posts.blog_id, blogs.user_id
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
         WHERE posts.post_id = ?
-        `)
+        `,
+    )
         .bind(postId)
         .first();
 
@@ -378,10 +386,12 @@ export const handleBlogDescriptionEditor = async (c: Context) => {
     const userId = c.get('USER_ID');
     const subdomain = c.get('SUBDOMAIN');
 
-    const blog = await c.env.DB.prepare(`
-        SELECT title, user_id, description
+    const blog = await c.env.DB.prepare(
+        `
+        SELECT title, user_id, description_md as description
         FROM blogs
-        WHERE blogs.slug = ?`)
+        WHERE blogs.slug = ?`,
+    )
         .bind(subdomain)
         .first();
 
@@ -393,6 +403,10 @@ export const handleBlogDescriptionEditor = async (c: Context) => {
         <div class="quick-draft">
         <form method="POST">
             <div style="margin-bottom:1em;">
+                <label for="title">Title</label>
+                <input type="text" name="title" value="${blog.title || ''}">
+
+                <label style="margin-top:1em;" for="description">Description</label>
                 <textarea name="description" rows="9" style="width:100%;">${blog.description || ''}</textarea>
             </div>
             <div class="buttons">
@@ -411,10 +425,12 @@ export const handleBlogDescriptionPOST = async (c: Context) => {
     const userId = c.get('USER_ID');
     const subdomain = c.get('SUBDOMAIN');
 
-    const blog = await c.env.DB.prepare(`
+    const blog = await c.env.DB.prepare(
+        `
         SELECT blog_id, user_id
         FROM blogs
-        WHERE blogs.slug = ?`)
+        WHERE blogs.slug = ?`,
+    )
         .bind(subdomain)
         .first();
 
@@ -422,13 +438,25 @@ export const handleBlogDescriptionPOST = async (c: Context) => {
     if (userId !== blog.user_id) return c.text('Unauthorized', 401);
 
     const body = await c.req.parseBody();
+    let title = body.title?.toString() || '';
+    title = await stripTags(title);
+
     const description = body.description?.toString() || '';
 
-    await c.env.DB.prepare(`
+    const descriptionHTML = description.length > 0 ? await markdownToHTML(description) : '';
+
+    if (!title) throw new Error('Title is required');
+    if (title.length > 140) throw new Error('Title is too long. 140 characters max.');
+
+    if (description.length > 1000) throw new Error('Description is too long. 1000 characters max.');
+
+    await c.env.DB.prepare(
+        `
         UPDATE blogs
-        SET description = ?
-        WHERE blog_id = ?`)
-        .bind(description, blog.blog_id)
+        SET title = ?, description_html = ?, description_md = ?
+        WHERE blog_id = ?`,
+    )
+        .bind(title, descriptionHTML, description, blog.blog_id)
         .run();
 
     await invalidateBlogCache(subdomain);
@@ -440,17 +468,21 @@ export const handleBlogRSS = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
 
     const batch = await c.env.DB.batch([
-        c.env.DB.prepare(`
-        SELECT title, user_id, slug
+        c.env.DB.prepare(
+            `
+        SELECT title, user_id, slug, description_html as description
         FROM blogs
-        WHERE blogs.slug = ?`).bind(subdomain),
+        WHERE blogs.slug = ?`,
+        ).bind(subdomain),
 
-        c.env.DB.prepare(`
+        c.env.DB.prepare(
+            `
         SELECT posts.post_id, posts.title, posts.slug, posts.pub_date, posts.content_html
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
         WHERE status = 'public' and blogs.slug = ?
-        ORDER BY posts.pub_date DESC`).bind(subdomain),
+        ORDER BY posts.pub_date DESC`,
+        ).bind(subdomain),
     ]);
 
     if (!batch[0].results.length) return c.notFound();
@@ -486,12 +518,14 @@ export const handlePostDeletePOST = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
     const slug = c.req.param('post_slug');
 
-    const postDBEntry = await c.env.DB.prepare(`
+    const postDBEntry = await c.env.DB.prepare(
+        `
         SELECT posts.post_id, posts.blog_id, blogs.user_id
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
         WHERE posts.slug = ?
-    `)
+    `,
+    )
         .bind(slug)
         .run();
 

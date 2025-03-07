@@ -142,3 +142,21 @@ export const sanitizeHTML = async (contentBlock: string): Promise<string> => {
 
     return sanitizedContentBlock;
 };
+
+export function stripTags(s: string) {
+    const stripped_text = new HTMLRewriter()
+        .on('*', {
+            text(textChunk) {
+                // Keep the text content as-is, effectively stripping tags
+                textChunk.after(textChunk.text, { html: false });
+            },
+            element(element) {
+                // Remove all HTML elements
+                element.removeAndKeepContent();
+            },
+        })
+        .transform(new Response(s))
+        .text();
+
+    return stripped_text;
+}
