@@ -69,7 +69,8 @@ export const renderPostEditor = (
                 <input type="date" id="date" name="date" value="${pub_date}">
             </details>
 
-            <div id="lds-ripple" class="lds-ripple"></div>
+            <!--inner divs of lds-ripple are needed for animation-->
+            <div id="lds-ripple" class="lds-ripple"><div></div><div></div></div>
 
         </form>
     </div>
