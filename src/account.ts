@@ -507,6 +507,13 @@ export const handleSignupPOST = async (c: Context) => {
             await c.env.DB.prepare('SELECT users.user_id FROM users WHERE username = ?').bind(username).first()
         ).user_id;
 
+        const title = `${username}'s blog`;
+        await c.env.DB.prepare(
+            'INSERT INTO blogs (title, slug, user_id, description_html, description_md) values (?,?,?,?,?)',
+        )
+            .bind(title, slug, userId, 'My new blog', 'My new blog')
+            .run();
+
         const email_verification_code = randomHash(32);
         await c.env.DB.prepare('INSERT INTO email_verifications (user_id, verification_code) values (?, ?)')
             .bind(userId, email_verification_code)
