@@ -1,6 +1,7 @@
 import type { Context } from 'hono';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import { raw } from 'hono/html';
+import { markdownToHTML } from './blogs';
 import { sendEmail } from './email';
 import { renderHTMLGeneral } from './htmltools';
 
@@ -33,9 +34,9 @@ export const handleMyAccount = async (c: Context) => {
 
     const email = user.results[0].email ? user.results[0].email : 'no';
     const username = user.results[0].username;
-    const status = user.results[0].status;
 
-    let listOfBlogs = '<section class="settings-section"><h2>MY BLOGS</h2><div class="blogs-list">';
+    let listOfBlogs =
+        '<section class="settings-section"><h2>MY BLOGS (<a href="/my/account/create_blog">Create New blog</a>)</h2><div class="blogs-list">';
     if (user_blogs.results.length > 0) {
         for (const blog of user_blogs.results) {
             listOfBlogs += `
@@ -629,17 +630,63 @@ function checkEmail(email: string) {
 }
 
 export const handleNewBlog = async (c: Context) => {
+    const user_id = c.get('USER_ID');
+    const batch = await c.env.DB.batch([
+        c.env.DB.prepare(`
+            SELECT created, username, email_verified, email
+            FROM users
+            WHERE user_id = ?`).bind(user_id),
+    ]);
+
+    const user = batch[0];
+    const username = user.results[0].username;
+
+    const list = `
+    <h1>Create new blog</h1>
+    <div class="quick-draft">
+        <form method="POST">
+            <div style="margin-bottom:1em;">
+                <label for="title">Title</label>
+                <input type="text" name="title">
+
+                <label style="margin-top:1em;" for="description">Description</label>
+                <textarea name="description" rows="9" style="width:100%;" placeholder="optional"></textarea>
+            </div>
+            <div class="form-group">
+                    <label for="slug">BLOG URL</label>
+                    <input type="text" id="slug" name="slug" required
+                            pattern="[a-zA-Z0-9-]+" title="Only letters, numbers, and hyphens are allowed">
+                    <div class="blog-url-preview">.exotext.com</div>
+                </div>
+            <div class="buttons">
+                <a href="/my/account" class="button button-outline">Cancel</a>
+                <input type="submit" value="Create blog">
+            </div>
+        </form>
+    </div>
+    `;
+    return c.html(renderHTMLGeneral('My account | exotext', raw(list), username));
+};
+
+export const handleNewBlogPOST = async (c: Context) => {
     const body = await c.req.parseBody();
-    const slug = body.address.toString();
+    const slug = body.slug.toString();
     if (!slug) throw new Error('Address is required');
     const title = body.title.toString();
+    if (title.length > 140) throw new Error('Title is too long. 140 characters max.');
     if (!title) throw new Error('Title is required');
+    const description = body.description.toString() || '';
+
+    const descriptionHTML = description.length > 0 ? await markdownToHTML(description) : '';
+    if (description.length > 1000) throw new Error('Description is too long. 1000 characters max.');
 
     const userId = c.get('USER_ID');
 
     try {
-        const blog_insertion_results = await c.env.DB.prepare('INSERT INTO blogs (title, slug, user_id) values (?,?,?)')
-            .bind(title, slug, userId)
+        const blog_insertion_results = await c.env.DB.prepare(
+            'INSERT INTO blogs (title, slug, user_id, description_html, description_md) values (?,?,?,?,?)',
+        )
+            .bind(title, slug, userId, descriptionHTML, description)
             .run();
 
         if (blog_insertion_results.success) {

@@ -160,3 +160,16 @@ export function stripTags(s: string) {
 
     return stripped_text;
 }
+
+export function escapeHtml(unsafe: unknown): string {
+    if (unsafe === null || unsafe === undefined) {
+        return '';
+    }
+
+    return String(unsafe)
+        .replace(/&/g, '&amp;') // & -> &amp;
+        .replace(/</g, '&lt;') // < -> &lt;
+        .replace(/>/g, '&gt;') // > -> &gt;
+        .replace(/"/g, '&quot;') // " -> &quot;
+        .replace(/'/g, '&#39;'); // ' -> &#39;
+}

@@ -1,4 +1,5 @@
 import { renderedCSS } from './css';
+import { escapeHtml } from './utils';
 
 export const renderPostEditor = (postId: number, title = '', content = '', slug = '', blog_title = '') => {
     return `
@@ -39,7 +40,7 @@ export const renderPostEditor = (postId: number, title = '', content = '', slug 
         <form style="height: 100%; display: flex; flex-direction: column;" method="POST" action="/${postId}" >
 
             <div class="title-input">
-                <input id="post-title" name="post-title" type="text" placeholder="Post title" value="${title}">
+                <input id="post-title" name="post-title" type="text" placeholder="Post title" value="${escapeHtml(title)}">
             </div>
 
             <div style="flex-grow: 1; height: 100%; display: flex; flex-direction: column; overflow: hidden;">

@@ -210,6 +210,34 @@ input[type="submit"].button-secondary:hover,
     opacity: 0.9;
 }
 
+.help-text {
+    display: block;
+    font-family: monospace;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    color: var(--help-color);
+}
+
+/* Password Requirements */
+.requirements {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: var(--help-color);
+    margin-top: 0.5rem;
+}
+
+.requirements ul {
+    list-style: none;
+    margin-top: 0.5rem;
+}
+
+.blog-url-preview {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+    margin-top: 0.5rem;
+}
+
 .flash {
     padding: 1rem;
     text-align: center;

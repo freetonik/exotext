@@ -1,6 +1,6 @@
-import { csrf } from 'hono/csrf'
 import type { Context, Env } from 'hono';
 import { Hono } from 'hono';
+import { csrf } from 'hono/csrf';
 import { raw } from 'hono/html';
 import {
     handleLogin,
@@ -8,6 +8,7 @@ import {
     handleLogout,
     handleMyAccount,
     handleNewBlog,
+    handleNewBlogPOST,
     handleResentVerificationEmailPOST,
     handleResetPassword,
     handleResetPasswordPOST,
@@ -45,7 +46,7 @@ const app = new Hono<{ Bindings: CloudflareBindings }>({
     strict: false,
 });
 
-app.use(csrf())
+app.use(csrf());
 app.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
 app.use('*', authCheckMiddleware);
@@ -90,7 +91,8 @@ app.post('/signup', handleSignupPOST);
 app.get('/logout', authRequiredMiddleware, handleLogout);
 
 app.get('/my/account', handleMyAccount);
-app.post('/my/account/create_blog', adminRequiredMiddleware, handleNewBlog);
+app.get('/my/account/create_blog', adminRequiredMiddleware, handleNewBlog);
+app.post('/my/account/create_blog', adminRequiredMiddleware, handleNewBlogPOST);
 app.post('/my/account/resend_verification_link', handleResentVerificationEmailPOST);
 app.get('/verify_email', handleVerifyEmail);
 
