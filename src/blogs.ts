@@ -307,7 +307,7 @@ export const handlePostEditor = async (c: Context) => {
 
     const post = await c.env.DB.prepare(
         `
-        SELECT posts.post_id, posts.slug, posts.title, posts.content_md, posts.content_html, blogs.user_id, blogs.title as blog_title
+        SELECT posts.post_id, posts.slug, posts.title, posts.content_md, posts.content_html, blogs.user_id, blogs.title as blog_title, pub_date
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
         WHERE posts.slug = ?`,
@@ -317,7 +317,13 @@ export const handlePostEditor = async (c: Context) => {
 
     if (!c.get('USER_LOGGED_IN') || userId !== post.user_id) return c.text('Unauthorized', 401);
 
-    return c.html(renderPostEditor(post.post_id, post.title, post.content_md, post.slug, post.blog_title));
+    const postDate = new Date(post.pub_date);
+    // format date to YYYY-MM-DD
+    const formattedDate = postDate.toISOString().split('T')[0].replace(/-/g, '-');
+
+    return c.html(
+        renderPostEditor(post.post_id, post.title, post.content_md, post.slug, post.blog_title, formattedDate),
+    );
 };
 
 // edit existing blog post
@@ -345,8 +351,8 @@ export const handlePostEditPOST = async (c: Context) => {
     if (!postTitle) return c.text('Post title is required');
     const contentMD = body['post-content'].toString();
     if (!contentMD) return c.text('Post content is required');
-    const datetime = body.datetime?.toString() || '';
-    let parsedDate = new Date(datetime);
+    const date = body.date?.toString() || '';
+    let parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) parsedDate = new Date();
 
     let newSlug = body['post-slug'].toString().toLowerCase();

@@ -1,7 +1,14 @@
 import { renderedCSS } from './css';
 import { escapeHtml } from './utils';
 
-export const renderPostEditor = (postId: number, title = '', content = '', slug = '', blog_title = '') => {
+export const renderPostEditor = (
+    postId: number,
+    title = '',
+    content = '',
+    slug = '',
+    blog_title = '',
+    pub_date = '',
+) => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -59,7 +66,7 @@ export const renderPostEditor = (postId: number, title = '', content = '', slug 
 
             <details class="publishing-controls-details">
                 <summary>Customize publication date</summary>
-                <input type="datetime-local" id="datetime" name="datetime">
+                <input type="date" id="date" name="date" value="${pub_date}">
             </details>
 
             <div id="lds-ripple" class="lds-ripple"></div>
