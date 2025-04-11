@@ -34,7 +34,7 @@ export const handleHomepage = async (c: Context) => {
         grid-template-columns: 1fr;
         gap: 3rem;
     }
-    .features a {
+    .intro a, .features a {
         color: var(--color-link);
     }
     .feature {
