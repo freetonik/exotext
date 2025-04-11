@@ -59,13 +59,15 @@ export const handleBlog = async (c: Context) => {
     const blog = batch[0].results[0];
     const posts = batch[1].results;
     const userIsOwner = userLoggedIn && userId === blog.user_id;
+    console.log(blog.description);
 
     let list = `
         <header class="blog-header">
             <h1>${blog.title}</h1>
-            <p class="blog-description">${blog.description || ''}
+            <div class="blog-description">
+            ${blog.description || ''}
             ${userIsOwner ? `<a class="muted no-color" href="/~/edit_description">[edit]</a>` : ''}
-            </p>
+            </div>
         </header>
     `;
 

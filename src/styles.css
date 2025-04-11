@@ -265,6 +265,11 @@ input[type="submit"].button-secondary:hover,
     max-width: 55ch;
 }
 
+.blog-description a,
+.blog-description a:visited {
+    color: var(--color-link);
+}
+
 .blog-header {
     margin-bottom: 6rem;
 }
