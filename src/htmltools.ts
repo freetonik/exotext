@@ -1,5 +1,4 @@
 import { html, raw } from 'hono/html';
-import { renderedCSS } from './css';
 
 export const renderHTMLGeneral = (
     title: string,
@@ -9,10 +8,6 @@ export const renderHTMLGeneral = (
         footer: true,
     },
 ) => {
-    const userBlock = user_logged_in
-        ? `<a href="/my/account">account</a>`
-        : `<span><a href="/login" class="bold">Log in</a> | <a class="bold" href="/signup">Sign up</a></span>`;
-
     const footer = customize.footer
         ? raw(`<footer>
             <p>Powered by <a href="https://exotext.com">Exotext</a></p>
@@ -28,7 +23,7 @@ export const renderHTMLGeneral = (
         <meta name="description" content="${title}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBkPSJtMTIuNjcyLjY2OCAzLjA1OSA2LjE5NyA2LjgzOC45OTNhLjc1Ljc1IDAgMCAxIC40MTYgMS4yOGwtNC45NDggNC44MjMgMS4xNjggNi44MTJhLjc1Ljc1IDAgMCAxLTEuMDg4Ljc5TDEyIDE4LjM0N2wtNi4xMTYgMy4yMTZhLjc1Ljc1IDAgMCAxLTEuMDg4LS43OTFsMS4xNjgtNi44MTEtNC45NDgtNC44MjNhLjc0OS43NDkgMCAwIDEgLjQxNi0xLjI3OWw2LjgzOC0uOTk0TDExLjMyNy42NjhhLjc1Ljc1IDAgMCAxIDEuMzQ1IDBaIj48L3BhdGg+PC9zdmc+" />
-        <style>${renderedCSS}</style>
+        <link rel="stylesheet" href="/assets/css/styles.css">
     </head>
     <body>
     <div class="container">
@@ -52,7 +47,10 @@ export const renderHTMLBlog = (title: string, inner: string) => {
         <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBkPSJtMTIuNjcyLjY2OCAzLjA1OSA2LjE5NyA2LjgzOC45OTNhLjc1Ljc1IDAgMCAxIC40MTYgMS4yOGwtNC45NDggNC44MjMgMS4xNjggNi44MTJhLjc1Ljc1IDAgMCAxLTEuMDg4Ljc5TDEyIDE4LjM0N2wtNi4xMTYgMy4yMTZhLjc1Ljc1IDAgMCAxLTEuMDg4LS43OTFsMS4xNjgtNi44MTEtNC45NDgtNC44MjNhLjc0OS43NDkgMCAwIDEgLjQxNi0xLjI3OWw2LjgzOC0uOTk0TDExLjMyNy42NjhhLjc1Ljc1IDAgMCAxIDEuMzQ1IDBaIj48L3BhdGg+PC9zdmc+" />
 
         <link rel="alternate" type="application/rss+xml" title="${title}" href="/rss.xml" />
-        <style>${renderedCSS}</style>
+        <link rel="stylesheet" href="/assets/css/styles.css">
+        <link rel="stylesheet" href="/assets/themes/default.css">
+        <link rel="stylesheet" href="/assets/css/katex.css">
+        <link rel="stylesheet" href="/assets/css/highlight-js.css">
     </head>
     <body>
     <div class="container">

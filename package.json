@@ -4,8 +4,7 @@
         "dev": "wrangler dev --port 8183",
         "dev-sub": "wrangler dev src/index.ts --host blog.localhost.dev --port 8184",
         "deploy": "wrangler deploy --minify",
-        "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-        "watch-css": "node watcher.js"
+        "cf-typegen": "wrangler types --env-interface CloudflareBindings"
     },
     "dependencies": {
         "@aws-sdk/client-ses": "^3.668.0",
@@ -16,11 +15,13 @@
         "marked-footnote": "^1.2.4",
         "marked-highlight": "^2.2.1",
         "marked-katex-extension": "^5.1.3",
-        "rss": "^1.2.2"
+        "rss": "^1.2.2",
+        "validator": "^13.15.0"
     },
     "devDependencies": {
         "@biomejs/biome": "1.9.3",
         "@cloudflare/workers-types": "^4.20241022.0",
+        "@types/validator": "^13.15.0",
         "wrangler": "^3.79.0"
     }
 }

@@ -19,10 +19,10 @@ import {
 } from './account';
 import {
     handleBlog,
-    handleBlogDescriptionEditor,
-    handleBlogDescriptionPOST,
     handleBlogPOST,
     handleBlogRSS, // new blog post handler
+    handleBlogSettings,
+    handleBlogSettingsPOST,
     handlePostDeletePOST,
     handlePostEditPOST,
     handlePostEditor,
@@ -110,8 +110,8 @@ subdomainApp.get('/robots.txt', async (c) => c.text('User-agent: *\nAllow: /'));
 
 subdomainApp.get('/', handleBlog);
 subdomainApp.post('/', handleBlogPOST); // new item
-subdomainApp.get('/~/edit_description', handleBlogDescriptionEditor);
-subdomainApp.post('/~/edit_description', handleBlogDescriptionPOST);
+subdomainApp.get('/~/settings', handleBlogSettings);
+subdomainApp.post('/~/settings', handleBlogSettingsPOST);
 
 subdomainApp.post('/upload', handleUploadImage);
 subdomainApp.post('/:post_id', handlePostEditPOST); // edit item

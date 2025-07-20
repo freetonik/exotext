@@ -1,0 +1,32 @@
+/* This is not used currently; should become a theme */
+:root {
+    --font-serif: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    --font-sans: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
+    --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+
+    --color-text: #2c353d;
+    --color-secondary: #666;
+    --color-bg: #fcfcfc;
+    --color-success: #2d503b;
+    --color-warning: #851d27;
+
+    --button-secondary-bg: #f2f2f2;
+
+    --color-border: #ddd;
+    --color-link: #093795;
+    --code-bg: #e3e1e1;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-text: #d8dee9;
+        --color-secondary: #cdd3de;
+        --color-bg: #2e3440;
+
+        --button-secondary-bg: #252525;
+
+        --color-border: #ddd;
+        --color-link: #6fc8ff;
+        --code-bg: #0c1117;
+    }
+}

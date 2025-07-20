@@ -1,4 +1,3 @@
-import { renderedCSS } from './css';
 import { escapeHtml } from './utils';
 
 export const renderPostEditor = (
@@ -39,7 +38,7 @@ export const renderPostEditor = (
         <script src="https://cdn.jsdelivr.net/npm/marked-katex-extension@5.1.3/lib/index.umd.min.js"></script>
 
         <script> const BLOG_TITLE="${blog_title}"; </script>
-        <style>${renderedCSS}</style>
+        <link rel="stylesheet" href="/assets/css/styles.css">
     </head>
     <body>
 

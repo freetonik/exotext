@@ -1,0 +1,95 @@
+:root {
+    --font-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+
+    --font-size: 18px;
+
+    --color-text: #2c353d;
+    --color-secondary: #666;
+    --color-bg: #fcfcfc;
+    --color-success: #2d503b;
+    --color-warning: #851d27;
+
+    --button-secondary-bg: #f2f2f2;
+
+    --color-border: #ddd;
+    --color-link: #093795;
+    --code-bg: #e3e1e1;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-text: #d8dee9;
+        --color-secondary: #cdd3de;
+        --color-bg: #2e3440;
+
+        --button-secondary-bg: #252525;
+
+        --color-border: #ddd;
+        --color-link: #6fc8ff;
+        --code-bg: #0c1117;
+    }
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--color-text);
+    line-height: 1.6;
+    background: var(--color-bg);
+    font-size: var(--font-size);
+    height: 100%;
+}
+
+header {
+    margin-bottom: 6rem;
+}
+
+
+blockquote {
+    font-style: italic;
+    border-left: 2px solid var(--color-warning);
+    padding-left: 1em;
+}
+
+
+
+
+.posts {
+    border-top: 1px solid #ddd;
+    padding-top: 3rem;
+}
+
+.post-item {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.post-date {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--color-secondary);
+}
+
+.post-title {
+    font-size: 1.1rem;
+    line-height: 1.3;
+}
+
+.post-item:hover .post-title {
+    color: var(--color-secondary);
+}
+
+.blog-link {
+    font-family: monospace;
+    color: var(--color-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.blog-link:hover {
+    color: var(--color-text);
+}

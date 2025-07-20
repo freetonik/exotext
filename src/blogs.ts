@@ -8,7 +8,7 @@ import markedKatex from 'marked-katex-extension';
 import RSS from 'rss';
 import { renderPostEditor } from './editor';
 import { renderHTMLBlog } from './htmltools';
-import { sanitizeHTML, stripTags, truncate } from './utils';
+import { sanitizeHTML, stripTags } from './utils';
 
 export const handleBlog = async (c: Context) => {
     const subdomain = c.get('SUBDOMAIN');
@@ -39,8 +39,10 @@ export const handleBlog = async (c: Context) => {
     const batch = await c.env.DB.batch([
         c.env.DB.prepare(
             `
-        SELECT title, user_id, slug, description_html as description
+        SELECT title, user_id, slug, description_html as description, posts_per_page, default_homepage_view, umami_script_url, umami_website_id
         FROM blogs
+        JOIN blog_preferences ON blogs.blog_id = blog_preferences.blog_id
+        LEFT JOIN blog_analytics ON blogs.blog_id = blog_analytics.blog_id
         WHERE blogs.slug = ?`,
         ).bind(subdomain),
 
@@ -59,14 +61,13 @@ export const handleBlog = async (c: Context) => {
     const blog = batch[0].results[0];
     const posts = batch[1].results;
     const userIsOwner = userLoggedIn && userId === blog.user_id;
-    console.log(blog.description);
 
     let list = `
-        <header class="blog-header">
+        <header>
             <h1>${blog.title}</h1>
-            <div class="blog-description">
+            <div class="description">
             ${blog.description || ''}
-            ${userIsOwner ? `<a class="muted no-color" href="/~/edit_description">[edit]</a>` : ''}
+            ${userIsOwner ? `<a class="muted no-color" href="/~/settings">[edit]</a>` : ''}
             </div>
         </header>
     `;
@@ -102,6 +103,7 @@ export const handleBlog = async (c: Context) => {
     };
 
     list += `<section class="posts">${quickDraft}`;
+
     for (const post of posts) {
         if (post.status !== 'public' && (!userLoggedIn || userId !== blog.user_id)) continue;
         const postDate = formatDate(new Date(post.pub_date));
@@ -118,7 +120,12 @@ export const handleBlog = async (c: Context) => {
     }
     list += '</section>';
 
-    const html = renderHTMLBlog(`${blog.title}`, raw(list));
+    let customHead = '';
+    if (blog.umami_script_url && blog.umami_website_id) {
+        customHead = `<script defer src="${blog.umami_script_url}" data-website-id="${blog.umami_website_id}"></script>`;
+    }
+
+    const html = renderHTMLBlog(`${blog.title}`, raw(list), customHead);
     const response = c.html(html);
 
     if (!userLoggedIn) {
@@ -164,12 +171,20 @@ export const handleBlogPOST = async (c: Context) => {
     const postContentFromBody = body['post-content'].toString().trim();
     const postContent = postContentFromBody ? postContentFromBody : 'empty draft';
 
-    if (!title.length) title = truncate(postContent, 128);
     const postContentHTML = await markdownToHTML(postContent);
 
     const datetime = body.datetime?.toString() || '';
     let parsedDate = new Date(datetime);
     if (isNaN(parsedDate.getTime())) parsedDate = new Date();
+
+    if (!title.length) {
+        const dateFormatOpts: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+        };
+        title = parsedDate.toLocaleDateString('en-UK', dateFormatOpts).replace(/\//g, '.');
+    }
 
     try {
         let item_slug = generate_slug(title);
@@ -183,13 +198,14 @@ export const handleBlogPOST = async (c: Context) => {
         }
 
         const pubDate = parsedDate.toISOString();
-        const requestedAction = body.action.toString().toLowerCase();
 
         await c.env.DB.prepare(
             'INSERT INTO posts (blog_id, title, slug, content_md, content_html, pub_date) values (?, ?, ?, ?, ?, ?)',
         )
             .bind(blog.blog_id, title, item_slug, postContent, postContentHTML, pubDate)
             .run();
+
+        const requestedAction = body.action.toString().toLowerCase();
         if (requestedAction === 'quick save') return c.redirect('/');
         if (requestedAction === 'continue editing in full') return c.redirect(`/${item_slug}/edit`);
         // }
@@ -229,9 +245,10 @@ export const handlePostSingle = async (c: Context) => {
 
     const postDBEntry = await c.env.DB.prepare(
         `
-            SELECT posts.title, posts.content_html, blogs.user_id, posts.pub_date, posts.status, blogs.title as blog_title
+            SELECT posts.title, posts.content_html, blogs.user_id, posts.pub_date, posts.status, blogs.title as blog_title, umami_script_url, umami_website_id
             FROM posts
             JOIN blogs ON blogs.blog_id = posts.blog_id
+            LEFT JOIN blog_analytics ON blogs.blog_id = blog_analytics.blog_id
             WHERE blogs.slug = ? AND posts.slug = ?
         `,
     )
@@ -280,7 +297,12 @@ export const handlePostSingle = async (c: Context) => {
             </div>
         </div>`;
     }
-    const html = renderHTMLBlog(`${post.title} | exotext`, raw(list), c.get('USER_LOGGED_IN'));
+
+    let customHead = '';
+    if (post.umami_script_url && post.umami_website_id) {
+        customHead = `<script defer src="${post.umami_script_url}" data-website-id="${post.umami_website_id}"></script>`;
+    }
+    const html = renderHTMLBlog(`${post.title} | exotext`, raw(list), customHead);
     const response = c.html(html);
 
     if (!userLoggedIn) {
@@ -389,15 +411,17 @@ export const handlePostEditPOST = async (c: Context) => {
     return c.redirect(`/${newSlug}`);
 };
 
-export const handleBlogDescriptionEditor = async (c: Context) => {
+export const handleBlogSettings = async (c: Context) => {
     if (!c.get('USER_LOGGED_IN')) return c.text('Unauthorized', 401);
     const userId = c.get('USER_ID');
     const subdomain = c.get('SUBDOMAIN');
 
     const blog = await c.env.DB.prepare(
         `
-        SELECT title, user_id, description_md as description
+        SELECT title, user_id, description_md as description, posts_per_page, default_homepage_view, umami_script_url, umami_website_id
         FROM blogs
+        JOIN blog_preferences ON blogs.blog_id = blog_preferences.blog_id
+        LEFT JOIN blog_analytics ON blogs.blog_id = blog_analytics.blog_id
         WHERE blogs.slug = ?`,
     )
         .bind(subdomain)
@@ -407,16 +431,38 @@ export const handleBlogDescriptionEditor = async (c: Context) => {
     if (userId !== blog.user_id) return c.text('Unauthorized', 401);
 
     const html = `
-        <h1>Edit blog description</h1>
+        <h1>Settings</h1>
         <div class="quick-draft">
         <form method="POST">
             <div style="margin-bottom:1em;">
-                <label for="title">Title</label>
+                <label for="title">Blog Title</label>
                 <input type="text" name="title" value="${blog.title || ''}">
 
-                <label style="margin-top:1em;" for="description">Description</label>
+                <label style="margin-top:1em;" for="description">Blog Description</label>
                 <textarea name="description" rows="9" style="width:100%;">${blog.description || ''}</textarea>
             </div>
+
+            <div style="margin-bottom:1em;">
+                <span>Home page</span><br>
+
+                <input type="radio" id="links" name="homepage_view" value="links" ${blog.default_homepage_view === 'links' ? 'checked' : ''}>
+                <label style="display:inline; color: var(--color-text);" for="links">Show list of links to posts</label><br>
+
+                <input type="radio" id="full" name="homepage_view" value="full" ${blog.default_homepage_view === 'full' ? 'checked' : ''}>
+                <label style="display:inline; color: var(--color-text);" for="full">Show posts in full</label><br>
+
+                <input type="number" id="posts_per_page" name="posts_per_page" min="1" max="1000" value="${blog.posts_per_page}" />
+                <label style="display:inline; color: var(--color-text);"for="posts_per_page">posts per page</label>
+            </div>
+
+            <div style="margin-bottom:1em;">
+                <label for="umami_script_url">Umami script URL</label>
+                <input type="url" name="umami_script_url" value="${blog.umami_script_url || ''}">
+
+                <label for="umami_website_id">Umami script URL</label>
+                <input type="text" name="umami_website_id" value="${blog.umami_website_id || ''}">
+            </div>
+
             <div class="buttons">
                 <a href="/" class="button button-outline">Cancel</a>
                 <input type="submit" value="Save">
@@ -428,7 +474,7 @@ export const handleBlogDescriptionEditor = async (c: Context) => {
     return c.html(renderHTMLBlog(blog.title, raw(html)));
 };
 
-export const handleBlogDescriptionPOST = async (c: Context) => {
+export const handleBlogSettingsPOST = async (c: Context) => {
     if (!c.get('USER_LOGGED_IN')) return c.text('Unauthorized', 401);
     const userId = c.get('USER_ID');
     const subdomain = c.get('SUBDOMAIN');
@@ -446,6 +492,12 @@ export const handleBlogDescriptionPOST = async (c: Context) => {
     if (userId !== blog.user_id) return c.text('Unauthorized', 401);
 
     const body = await c.req.parseBody();
+
+    const homepageView = body.homepage_view?.toString() || 'links';
+    const postsPerPage = Number.parseInt(body.posts_per_page?.toString() || '100');
+    const umamiScriptUrl = body.umami_script_url?.toString() || '';
+    const umamiWebsiteId = body.umami_website_id?.toString() || '';
+
     let title = body.title?.toString() || '';
     title = await stripTags(title);
 
@@ -467,8 +519,33 @@ export const handleBlogDescriptionPOST = async (c: Context) => {
         .bind(title, descriptionHTML, description, blog.blog_id)
         .run();
 
-    await invalidateBlogCache(subdomain);
+    await c.env.DB.prepare(
+        `
+        UPDATE blog_preferences
+        SET posts_per_page = ?, default_homepage_view = ?
+        WHERE blog_id = ?`,
+    )
+        .bind(postsPerPage, homepageView, blog.blog_id)
+        .run();
 
+    if (umamiScriptUrl && umamiWebsiteId) {
+        if (!umamiScriptUrl.startsWith('https://')) {
+            throw new Error('Umami script URL must start with https://');
+        }
+        if (!umamiScriptUrl.endsWith('.js')) {
+            throw new Error('Umami script URL must end with .js');
+        }
+        await c.env.DB.prepare(
+            `
+            INSERT OR REPLACE INTO blog_analytics (blog_id, umami_script_url, umami_website_id)
+            VALUES (?, ?, ?)`,
+        )
+            .bind(blog.blog_id, umamiScriptUrl, umamiWebsiteId)
+            .run();
+    }
+
+    await invalidateBlogCache(subdomain);
+    await invalidateAllPostCaches(c, subdomain);
     return c.redirect('/');
 };
 
@@ -598,6 +675,24 @@ export const invalidatePostCache = async (subdomain: string, postSlug: string) =
         await cache.delete(cacheKey);
     } catch (error) {
         console.error('Cache invalidation error:', error);
+    }
+};
+
+export const invalidateAllPostCaches = async (c: Context, subdomain: string) => {
+    const slugs = await c.env.DB.prepare(
+        'SELECT slug FROM posts WHERE blog_id = (SELECT blog_id FROM blogs WHERE slug = ?)',
+    )
+        .bind(subdomain)
+        .all();
+    const cache = caches.default;
+    const cacheKeys = slugs.results.map((post) => new Request(`https://blog-cache/${subdomain}/${post.slug}`));
+    for (const cacheKey of cacheKeys) {
+        try {
+            await cache.delete(cacheKey);
+            console.log(`Cache invalidated for ${cacheKey.url}`);
+        } catch (error) {
+            console.error('Cache invalidation error:', error);
+        }
     }
 };
 

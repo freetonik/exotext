@@ -690,13 +690,16 @@ export const handleNewBlogPOST = async (c: Context) => {
     const userId = c.get('USER_ID');
 
     try {
-        const blog_insertion_results = await c.env.DB.prepare(
-            'INSERT INTO blogs (title, slug, user_id, description_html, description_md) values (?,?,?,?,?)',
+        const newBlogRecord = await c.env.DB.prepare(
+            'INSERT INTO blogs (title, slug, user_id, description_html, description_md) values (?,?,?,?,?) RETURNING blog_id',
         )
             .bind(title, slug, userId, descriptionHTML, description)
-            .run();
+            .first();
 
-        if (blog_insertion_results.success) {
+        if (newBlogRecord.blog_id) {
+            await c.env.DB.prepare('INSERT INTO blog_preferences (blog_id) values (?)')
+                .bind(newBlogRecord.blog_id)
+                .run();
             return c.redirect(`https://${slug}.exotext.com`);
         }
 
