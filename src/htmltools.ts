@@ -35,7 +35,7 @@ export const renderHTMLGeneral = (
     </html>`;
 };
 
-export const renderHTMLBlog = (title: string, inner: string) => {
+export const renderHTMLBlog = (title: string, inner: string, customHead: string) => {
     return html`
     <!DOCTYPE html>
     <html lang="en">
@@ -51,6 +51,7 @@ export const renderHTMLBlog = (title: string, inner: string) => {
         <link rel="stylesheet" href="/assets/themes/default.css">
         <link rel="stylesheet" href="/assets/css/katex.css">
         <link rel="stylesheet" href="/assets/css/highlight-js.css">
+        ${raw(customHead)}
     </head>
     <body>
     <div class="container">
