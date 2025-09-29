@@ -39,7 +39,7 @@ export const handleBlog = async (c: Context) => {
     const batch = await c.env.DB.batch([
         c.env.DB.prepare(
             `
-        SELECT title, user_id, slug, description_html as description, posts_per_page, default_homepage_view, umami_script_url, umami_website_id
+        SELECT title, user_id, slug, description_html as description, posts_per_page, default_homepage_view, umami_script_url, umami_website_id, theme
         FROM blogs
         JOIN blog_preferences ON blogs.blog_id = blog_preferences.blog_id
         LEFT JOIN blog_analytics ON blogs.blog_id = blog_analytics.blog_id
@@ -67,7 +67,6 @@ export const handleBlog = async (c: Context) => {
             <h1>${blog.title}</h1>
             <div class="description">
             ${blog.description || ''}
-            ${userIsOwner ? `<a class="muted no-color" href="/~/settings">[edit]</a>` : ''}
             </div>
         </header>
     `;
@@ -125,7 +124,8 @@ export const handleBlog = async (c: Context) => {
         customHead = `<script defer src="${blog.umami_script_url}" data-website-id="${blog.umami_website_id}"></script>`;
     }
 
-    const html = renderHTMLBlog(`${blog.title}`, raw(list), customHead);
+    const customFooterContent = userIsOwner ? `<a href="/~/settings">settings</a>` : ''
+    const html = renderHTMLBlog(`${blog.title}`, raw(list), customHead, customFooterContent, blog.theme);
     const response = c.html(html);
 
     if (!userLoggedIn) {
@@ -245,10 +245,11 @@ export const handlePostSingle = async (c: Context) => {
 
     const postDBEntry = await c.env.DB.prepare(
         `
-            SELECT posts.title, posts.content_html, blogs.user_id, posts.pub_date, posts.status, blogs.title as blog_title, umami_script_url, umami_website_id
+            SELECT posts.title, posts.content_html, blogs.user_id, posts.pub_date, posts.status, blogs.title as blog_title, umami_script_url, umami_website_id, theme
             FROM posts
             JOIN blogs ON blogs.blog_id = posts.blog_id
             LEFT JOIN blog_analytics ON blogs.blog_id = blog_analytics.blog_id
+            LEFT JOIN blog_preferences ON blogs.blog_id = blog_preferences.blog_id
             WHERE blogs.slug = ? AND posts.slug = ?
         `,
     )
@@ -285,16 +286,12 @@ export const handlePostSingle = async (c: Context) => {
 
     if (userLoggedIn && userId === post.user_id) {
         list += `
-        <div style="margin-top:3em;">
+        <div class="post-controls mt-3">
             <span class="label label-green">${post.status}</span>
-            <div style="display: flex; gap: 10px;margin-top:1em;">
-                <form action="${postSlug}/delete" method="POST">
-                    <input class="button-secondary" type="submit" value="Delete" onclick="return confirm('Are you sure?')">
-                </form>
-                <form action="${postSlug}/edit" method="GET">
-                    <input type="submit" value="Edit">
-                </form>
-            </div>
+            <form action="${postSlug}/delete" method="POST">
+                <input class="button-secondary" type="submit" value="delete" onclick="return confirm('Are you sure?')">
+            </form>
+            <a href="${postSlug}/edit">edit</a>
         </div>`;
     }
 
@@ -302,7 +299,7 @@ export const handlePostSingle = async (c: Context) => {
     if (post.umami_script_url && post.umami_website_id) {
         customHead = `<script defer src="${post.umami_script_url}" data-website-id="${post.umami_website_id}"></script>`;
     }
-    const html = renderHTMLBlog(`${post.title} | exotext`, raw(list), customHead);
+    const html = renderHTMLBlog(`${post.title} | exotext`, raw(list), customHead, '', post.theme);
     const response = c.html(html);
 
     if (!userLoggedIn) {
@@ -331,9 +328,10 @@ export const handlePostEditor = async (c: Context) => {
 
     const post = await c.env.DB.prepare(
         `
-        SELECT posts.post_id, posts.slug, posts.title, posts.content_md, posts.content_html, blogs.user_id, blogs.title as blog_title, pub_date
+        SELECT posts.post_id, posts.slug, posts.title, posts.content_md, posts.content_html, blogs.user_id, blogs.title as blog_title, pub_date, theme
         FROM posts
         JOIN blogs ON blogs.blog_id = posts.blog_id
+        JOIN blog_preferences on posts.blog_id = blog_preferences.blog_id
         WHERE posts.slug = ?`,
     )
         .bind(post_slug)
@@ -346,7 +344,7 @@ export const handlePostEditor = async (c: Context) => {
     const formattedDate = postDate.toISOString().split('T')[0].replace(/-/g, '-');
 
     return c.html(
-        renderPostEditor(post.post_id, post.title, post.content_md, post.slug, post.blog_title, formattedDate),
+        renderPostEditor(post.post_id, post.title, post.content_md, post.slug, post.blog_title, formattedDate, post.theme),
     );
 };
 
@@ -418,7 +416,7 @@ export const handleBlogSettings = async (c: Context) => {
 
     const blog = await c.env.DB.prepare(
         `
-        SELECT title, user_id, description_md as description, posts_per_page, default_homepage_view, umami_script_url, umami_website_id
+        SELECT title, user_id, description_md as description, posts_per_page, default_homepage_view, umami_script_url, umami_website_id, theme
         FROM blogs
         JOIN blog_preferences ON blogs.blog_id = blog_preferences.blog_id
         LEFT JOIN blog_analytics ON blogs.blog_id = blog_analytics.blog_id
@@ -434,7 +432,7 @@ export const handleBlogSettings = async (c: Context) => {
         <h1>Settings</h1>
         <div class="quick-draft">
         <form method="POST">
-            <div style="margin-bottom:1em;">
+            <div class="mb-2">
                 <label for="title">Blog Title</label>
                 <input type="text" name="title" value="${blog.title || ''}">
 
@@ -442,20 +440,31 @@ export const handleBlogSettings = async (c: Context) => {
                 <textarea name="description" rows="9" style="width:100%;">${blog.description || ''}</textarea>
             </div>
 
-            <div style="margin-bottom:1em;">
-                <span>Home page</span><br>
 
-                <input type="radio" id="links" name="homepage_view" value="links" ${blog.default_homepage_view === 'links' ? 'checked' : ''}>
-                <label style="display:inline; color: var(--color-text);" for="links">Show list of links to posts</label><br>
+            <div class="mb-2">
+                <h3>Theme</h3>
+                <input type="radio" id="theme_default" name="theme" value="default" ${blog.theme === 'default' ? 'checked' : ''}>
+                <label class="inline" for="theme_default">Default</label><br>
 
-                <input type="radio" id="full" name="homepage_view" value="full" ${blog.default_homepage_view === 'full' ? 'checked' : ''}>
-                <label style="display:inline; color: var(--color-text);" for="full">Show posts in full</label><br>
-
-                <input type="number" id="posts_per_page" name="posts_per_page" min="1" max="1000" value="${blog.posts_per_page}" />
-                <label style="display:inline; color: var(--color-text);"for="posts_per_page">posts per page</label>
+                <input type="radio" id="theme_sansa" name="theme" value="sansa" ${blog.theme === 'sansa' ? 'checked' : ''}>
+                <label class="inline" for="theme_sansa">Sansa</label><br>
             </div>
 
-            <div style="margin-bottom:1em;">
+            <div class="mb-2">
+                <h3>Home page</h3>
+
+                <input type="radio" id="links" name="homepage_view" value="links" ${blog.default_homepage_view === 'links' ? 'checked' : ''}>
+                <label class="inline" for="links">Show list of links to posts</label><br>
+
+                <input type="radio" id="full" name="homepage_view" value="full" ${blog.default_homepage_view === 'full' ? 'checked' : ''}>
+                <label class="inline" for="full">Show posts in full</label><br>
+
+                <input type="number" id="posts_per_page" name="posts_per_page" min="1" max="1000" value="${blog.posts_per_page}" />
+                <label class="inline" for="posts_per_page">posts per page</label>
+            </div>
+
+            <div class="mb-2">
+                <h3>Analytics</h3>
                 <label for="umami_script_url">Umami script URL</label>
                 <input type="url" name="umami_script_url" value="${blog.umami_script_url || ''}">
 
@@ -494,6 +503,7 @@ export const handleBlogSettingsPOST = async (c: Context) => {
     const body = await c.req.parseBody();
 
     const homepageView = body.homepage_view?.toString() || 'links';
+    const theme = body.theme?.toString() || 'default';
     const postsPerPage = Number.parseInt(body.posts_per_page?.toString() || '100');
     const umamiScriptUrl = body.umami_script_url?.toString() || '';
     const umamiWebsiteId = body.umami_website_id?.toString() || '';
@@ -519,14 +529,15 @@ export const handleBlogSettingsPOST = async (c: Context) => {
         .bind(title, descriptionHTML, description, blog.blog_id)
         .run();
 
-    await c.env.DB.prepare(
+    const r = await c.env.DB.prepare(
         `
         UPDATE blog_preferences
-        SET posts_per_page = ?, default_homepage_view = ?
+        SET posts_per_page = ?, default_homepage_view = ?, theme = ?
         WHERE blog_id = ?`,
     )
-        .bind(postsPerPage, homepageView, blog.blog_id)
+        .bind(postsPerPage, homepageView, theme, blog.blog_id)
         .run();
+
 
     if (umamiScriptUrl && umamiWebsiteId) {
         if (!umamiScriptUrl.startsWith('https://')) {

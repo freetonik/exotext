@@ -7,6 +7,7 @@ export const renderPostEditor = (
     slug = '',
     blog_title = '',
     pub_date = '',
+    theme = 'default'
 ) => {
     return `
     <!DOCTYPE html>
@@ -39,6 +40,7 @@ export const renderPostEditor = (
 
         <script> const BLOG_TITLE="${blog_title}"; </script>
         <link rel="stylesheet" href="/assets/css/styles.css">
+        <link rel="stylesheet" href="/assets/themes/${theme}.css">
     </head>
     <body>
 

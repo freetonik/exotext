@@ -2,6 +2,8 @@
     --font-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
     --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 
+    --font-size: 18px;
+
     --color-text: #2c353d;
     --color-secondary: #666;
     --color-bg: #fcfcfc;
@@ -46,14 +48,42 @@ body {
     line-height: 1.6;
     color: var(--color-text);
     background: var(--color-bg);
-    font-size: 18px;
+    font-size: var(--font-size);
     height: 100%;
     counter-reset: katexEqnNo mmlEqnNo;
 }
 
+h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: normal;
+    margin-bottom: 1rem;
+}
+
+section {
+    margin-top: 1rem;
+}
+
+details summary {
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 2rem 1.5rem;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    nav {
+        margin-bottom: 4rem;
+    }
+}
 
 /* ================================================================================================================== */
-/* UTILITY CONTAINERS */
+/* UTILITY */
 
 .container {
     max-width: 900px;
@@ -61,41 +91,40 @@ body {
     padding: 3rem 2rem;
 }
 
-.container-sm {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 3rem 2rem;
-    height: 100%;
+.muted {
+    opacity: 0.6;
 }
 
-.editor-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+.no-color {
+    color: inherit;
+    text-decoration: none;
 }
 
+.no-color:hover {
+    text-decoration: underline;
+}
+
+.mt-3 {
+    margin-top: 3rem;
+}
+
+.mb-1 {
+    margin-bottom: 1rem;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.mb-3 {
+    margin-bottom: 3rem;
+}
 
 /* ================================================================================================================== */
 /* QUICK DRAFT */
 
 .quick-draft {
     margin-bottom: 3em;
-}
-
-details.quick-draft summary {
-    cursor: pointer;
-}
-
-.quick-draft form textarea {
-    resize: vertical;
-    width: 100%;
-    padding: 1em;
-    background-color: var(--color-bg);
-    color: var(--color-text);
-}
-
-.quick-draft form textarea:focus {
-    outline-color: var(--color-border);
 }
 
 .quick-draft .buttons {
@@ -117,7 +146,7 @@ nav .menu {
 }
 
 nav .menu a {
-    font-family: monospace;
+    font-family: var(--font-monospace);
     color: var(--color-secondary);
     text-decoration: none;
     font-size: 0.9rem;
@@ -127,18 +156,11 @@ nav .menu a:hover {
     color: var(--color-text);
 }
 
-.logo {
+nav .logo {
     font-family: var(--font-monospace);
     color: var(--color-text);
     text-decoration: none;
     font-size: 1rem;
-}
-
-h1 {
-    font-size: 2rem;
-    line-height: 1.2;
-    font-weight: normal;
-    margin-bottom: 1rem;
 }
 
 header .description {
@@ -152,6 +174,13 @@ header a:visited {
 
 /* ================================================================================================================== */
 /* SERVICE PAGES: login, sign up, reset password */
+.service-page {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    height: 100%;
+}
+
 .service-page nav {
     margin-bottom: 4rem;
     text-align: center;
@@ -169,9 +198,40 @@ header a:visited {
     color: var(--secondary-text);
 }
 
+.service-page form .links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-top: 2rem;
+}
+
+.service-page form .links a {
+    color: var(--text-color);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.service-page form .links a:hover {
+    border-bottom-color: var(--text-color);
+}
+
 
 /* ================================================================================================================== */
 /* FORMS */
+
+form textarea {
+    resize: vertical;
+    width: 100%;
+    padding: 1em;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+form textarea:focus {
+    outline: none;
+}
+
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -191,18 +251,24 @@ input[type="password"] {
 
 label {
     display: block;
-    font-family: monospace;
+    font-family: var(--font-monospace);
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
     color: var(--color-secondary);
 }
+
+label.inline {
+    display: inline;
+    color: var(--color-text);
+}
+
 
 button,
 input[type="submit"],
 .button {
     padding: 0.75rem 2rem;
     font-size: 0.9rem;
-    font-family: monospace;
+    font-family: var(--font-monospace);
     letter-spacing: 0.05em;
     cursor: pointer;
     border: none;
@@ -232,7 +298,7 @@ input[type="submit"].button-secondary:hover,
 
 .help-text {
     display: block;
-    font-family: monospace;
+    font-family: var(--font-monospace);
     font-size: 0.8rem;
     margin-top: 0.5rem;
     color: var(--help-color);
@@ -240,7 +306,7 @@ input[type="submit"].button-secondary:hover,
 
 /* Password Requirements */
 .requirements {
-    font-family: monospace;
+    font-family: var(--font-monospace);
     font-size: 0.8rem;
     color: var(--help-color);
     margin-top: 0.5rem;
@@ -252,11 +318,34 @@ input[type="submit"].button-secondary:hover,
 }
 
 .blog-url-preview {
-    font-family: monospace;
+    font-family: var(--font-monospace);
     font-size: 0.9rem;
     color: var(--secondary-text);
     margin-top: 0.5rem;
 }
+
+/* ================================================================================================================== */
+/* POST PAGE */
+
+.post-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-monospace);
+    font-size: 0.9rem;
+}
+
+.post-controls input[type="submit"] {
+    padding: 0;
+    font-family: var(--font-monospace);
+    letter-spacing: 0;
+    color: var(--color-warning);
+    background: none;
+    text-decoration: underline;
+}
+
+/* ================================================================================================================== */
+/* SETTINGS */
 
 .flash {
     padding: 1rem;
@@ -280,169 +369,9 @@ input[type="submit"].button-secondary:hover,
     color: white;
 }
 
-
-/* Article */
-article {
-    margin-bottom: 4rem;
-}
-
-article .post-header {
-    margin-bottom: 3rem;
-}
-
-article h1 {
-    font-size: 2.5rem;
-    line-height: 1.2;
-    font-weight: normal;
-    margin-bottom: 1rem;
-}
-
-article .post-date {
-    font-family: monospace;
-    color: var(--secondary-text);
-}
-
-/* Content Elements */
-article .post-content>*+* {
-    margin-top: 1.5rem;
-}
-
-article h2 {
-    font-size: 1.5rem;
-    margin-top: 3rem;
-    margin-bottom: 1.5rem;
-}
-
-article h3 {
-    font-size: 1.25rem;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-}
-
-article p {
-    max-width: 70ch;
-    margin-block: 1lh;
-}
-
-article a {
-    color: var(--color-link);
-}
-
-article ul,
-ol {
-    padding-left: 1.5rem;
-    max-width: 65ch;
-}
-
-article li+li {
-    margin-top: 0.5rem;
-}
-
-/* Code */
-article pre {
-    overflow-x: auto;
-    border: 1px solid var(--color-border);
-}
-
-article code {
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-
-article p code {
-    padding: 0.2rem 0.4rem;
-    background: var(--code-bg);
-    border-radius: 0.25em;
-}
-
-article ul li {
-    list-style: disc;
-}
-
-article ul li:has(input[type="checkbox"]) {
-    list-style: none;
-    position: relative;
-}
-
-article ul li input[type="checkbox"] {
-    display: inline-block;
-    width: auto;
-}
-
-article section.footnotes {
-    border-top: 1px solid var(--color-border);
-}
-
-article section.footnotes h2.footnote-label {
-    margin-top: 1em;
-}
-
-article section.footnotes ol li p {
-    margin: 0;
-}
-
-/* Images */
-article img {
-    max-width: 100%;
-    height: auto;
-}
-
-article figure {
-    margin: 2rem 0;
-}
-
-article figcaption {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--secondary-text);
-    text-align: center;
-}
-
-/* Tables */
-article table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 2rem 0;
-    font-size: 0.9rem;
-}
-
-article th,
-td {
-    padding: 0.75rem;
-    border: 1px solid var(--color-border);
-    text-align: left;
-}
-
-article th {
-    font-family: monospace;
-    font-weight: normal;
-    letter-spacing: 0.05em;
-}
-
-
-
-.post-status {
-    font-family: monospace;
-    font-size: 0.9rem;
-    color: var(--secondary-text);
-}
-
 .buttons {
     display: flex;
     gap: 1rem;
-}
-
-.settings-section {
-    margin-bottom: 4rem;
-}
-
-.settings-section h2 {
-    font-family: monospace;
-    font-size: 1rem;
-    font-weight: normal;
-    letter-spacing: 0.05em;
-    margin-bottom: 1.5rem;
-    color: var(--secondary-text);
 }
 
 .account-info {
@@ -464,13 +393,13 @@ article th {
 }
 
 .label-form {
-    font-family: monospace;
+    font-family: var(--font-monospace);
     font-size: 0.9rem;
     color: var(--secondary-text);
 }
 
 .label {
-    font-family: monospace;
+    font-family: var(--font-monospace);
     color: var(--text-secondary);
     font-size: 0.8rem;
     padding: 0.2rem 0.5rem;
@@ -497,7 +426,9 @@ article th {
     color: white;
 }
 
-/* Blogs List */
+/* ================================================================================================================== */
+/* BLOGS LIST ACCOUNT VIEW */
+
 .blogs-list {
     border-top: 1px solid var(--color-border);
 }
@@ -513,7 +444,7 @@ article th {
 }
 
 .blog-url {
-    font-family: monospace;
+    font-family: var(--font-monospace);
     font-size: 0.9rem;
     color: var(--secondary-text);
     text-decoration: none;
@@ -523,7 +454,9 @@ article th {
     color: var(--text-color);
 }
 
-/* Footer */
+/* ================================================================================================================== */
+/* FOOTER */
+
 footer {
     margin-top: 6rem;
     padding-top: 2rem;
@@ -535,55 +468,14 @@ footer a {
     color: inherit;
 }
 
-form .links {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    margin-top: 2rem;
-}
-
-form .links a {
-    color: var(--text-color);
-    text-decoration: none;
-    border-bottom: 1px solid var(--color-border);
-}
-
-form .links a:hover {
-    border-bottom-color: var(--text-color);
-}
-
-@media (max-width: 600px) {
-    .container {
-        padding: 2rem 1.5rem;
-    }
-
-    h1 {
-        font-size: 2rem;
-    }
-
-    nav {
-        margin-bottom: 4rem;
-    }
-
-    .post-item {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .post-date {
-        font-size: 0.85rem;
-    }
-}
-
+/* ================================================================================================================== */
 /* EDITOR */
 
 .editor-container {
-    height: 100%;
-    padding: .75rem;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    padding: .75rem;
     max-width: 900px;
     margin: 0 auto;
 }
@@ -595,10 +487,12 @@ form .links a:hover {
 
 .editor-container input[type="submit"],
 .editor-container .button {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem;
     font-size: .8rem;
     letter-spacing: 0;
 }
+
+
 
 /* Title Input */
 .editor-container .title-input {
@@ -623,7 +517,6 @@ form .links a:hover {
     color: var(--secondary-text);
 }
 
-/* Publishing Controls */
 .editor-container .publishing-controls {
     margin-top: .5rem;
     display: flex;
@@ -640,7 +533,6 @@ form .links a:hover {
 .editor-container .publishing-controls-details {
     margin-top: .5rem;
 }
-
 
 .CodeMirror {
     font-family: var(--font-monospace);
@@ -665,7 +557,7 @@ form .links a:hover {
     display: none;
     background-color: var(--color-bg);
     overflow-y: auto;
-    border: 3px dashed var(--color-warning);
+    border: 1px dashed var(--color-warning);
 }
 
 .close-button {
@@ -675,28 +567,14 @@ form .links a:hover {
     z-index: 1001;
 }
 
-
 .preview-content {
     padding: 40px;
     max-width: 800px;
     margin: 0 auto;
 }
 
-/* UTILS */
 
-.muted {
-    opacity: 0.6;
-}
-
-.no-color {
-    color: inherit;
-    text-decoration: none;
-}
-
-.no-color:hover {
-    text-decoration: underline;
-}
-
+/* ANIMATION */
 
 .lds-ripple,
 .lds-ripple div {

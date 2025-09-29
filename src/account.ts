@@ -36,7 +36,7 @@ export const handleMyAccount = async (c: Context) => {
     const username = user.results[0].username;
 
     let listOfBlogs =
-        '<section class="settings-section"><h2>MY BLOGS (<a href="/my/account/create_blog">Create New blog</a>)</h2><div class="blogs-list">';
+        '<section class="settings-section mb-3"><h3>My blogs (<a href="/my/account/create_blog">Create new</a>)</h3><div class="blogs-list">';
     if (user_blogs.results.length > 0) {
         for (const blog of user_blogs.results) {
             listOfBlogs += `
@@ -56,7 +56,7 @@ export const handleMyAccount = async (c: Context) => {
     </nav>
 
     <main>
-        <section class="settings-section">
+        <section class="settings-section mb-3">
             <h1>My account</h1>
             <div class="account-info">
                 <div class="info-row">
@@ -154,34 +154,34 @@ const renderLoginForm = (email?: string, error?: string) => {
     const emailValue = email ? email : '';
     const errorMessage = error ? `<div class="flash flash-success">${error}</div>` : '';
     return `
-    <div class="container-sm service-page">
-    <nav>
-        <a href="/" class="logo">EXOTEXT</a>
-    </nav>
+    <div class="service-page">
+        <nav>
+            <a href="/" class="logo">EXOTEXT</a>
+        </nav>
 
-    <main>
-        <h1>Sign In</h1>
+        <main>
+            <h1>Sign In</h1>
 
-        <form action="/login" method="POST">
-            <div class="form-group">
-                <label for="email">EMAIL</label>
-                <input type="email" id="email" name="email" value="${emailValue}" required>
-            </div>
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="email">EMAIL</label>
+                    <input type="email" id="email" name="email" value="${emailValue}" required>
+                </div>
 
-            <div class="form-group">
-                <label for="password">PASSWORD</label>
-                <input type="password" id="password" name="password" required>
-            </div>
+                <div class="form-group">
+                    <label for="password">PASSWORD</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
 
-            <input type="submit" value="Sign in">
-            ${errorMessage}
+                <input type="submit" value="Sign in">
+                ${errorMessage}
 
-            <div class="links">
-                <a href="/reset_password">Forgot your password?</a>
-                <a href="/signup">Create an account</a>
-            </div>
-        </form>
-    </main>
+                <div class="links">
+                    <a href="/reset_password">Forgot your password?</a>
+                    <a href="/signup">Create an account</a>
+                </div>
+            </form>
+        </main>
     </div>
 
     `;
@@ -221,7 +221,7 @@ export const handleResetPassword = async (c: Context) => {
     } else {
         // no code provided, show form to enter email
         inner = `
-        <div class="container-sm service-page">
+        <div class="service-page">
 
         <nav>
             <a href="/" class="logo">EXOTEXT</a>
@@ -239,12 +239,15 @@ export const handleResetPassword = async (c: Context) => {
                     </div>
 
                     <input type="submit" value="Reset password">
+
+                     <div class="links">
+                        <a href="/login">Return to sign in</a>
+                    </div>
+
                 </form>
             </div>
 
-            <div class="links">
-                <a href="/login">Return to sign in</a>
-            </div>
+
         </main>
 
         </div>
@@ -362,7 +365,7 @@ export const handleSignup = async (c: Context) => {
         margin-top: 0.5rem;
     }
     </style>
-    <div class="container-sm service-page">
+    <div class="service-page">
     <nav>
         <a href="/" class="logo">EXOTEXT</a>
     </nav>

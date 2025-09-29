@@ -35,7 +35,7 @@ export const renderHTMLGeneral = (
     </html>`;
 };
 
-export const renderHTMLBlog = (title: string, inner: string, customHead: string) => {
+export const renderHTMLBlog = (title: string, inner: string, customHead?: string, customFooterContent?: string, theme?: string) => {
     return html`
     <!DOCTYPE html>
     <html lang="en">
@@ -48,16 +48,16 @@ export const renderHTMLBlog = (title: string, inner: string, customHead: string)
 
         <link rel="alternate" type="application/rss+xml" title="${title}" href="/rss.xml" />
         <link rel="stylesheet" href="/assets/css/styles.css">
-        <link rel="stylesheet" href="/assets/themes/default.css">
         <link rel="stylesheet" href="/assets/css/katex.css">
         <link rel="stylesheet" href="/assets/css/highlight-js.css">
-        ${raw(customHead)}
+        <link rel="stylesheet" href="/assets/themes/${theme || 'default'}.css">
+        ${raw(customHead || '')}
     </head>
     <body>
     <div class="container">
         ${inner}
         <footer>
-            <p>Powered by <a href="https://exotext.com">Exotext</a></p>
+            <p>${raw(customFooterContent || 'Powered by <a href="https://exotext.com">Exotext</a>')}</p>
         </footer>
     </div>
 

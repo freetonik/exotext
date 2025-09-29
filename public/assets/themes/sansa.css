@@ -1,8 +1,8 @@
 :root {
-    --font-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    --font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Adwaita Sans, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif;
     --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 
-    --font-size: 18px;
+    --font-size: 14px;
 
     --color-text: #2c353d;
     --color-secondary: #666;
@@ -50,9 +50,6 @@ blockquote {
     border-left: 2px solid var(--color-warning);
     padding-left: 1em;
 }
-
-
-
 
 .posts {
     border-top: 1px solid #ddd;
