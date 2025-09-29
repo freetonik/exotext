@@ -166,25 +166,32 @@ export const handleBlogPOST = async (c: Context) => {
 
     // ok, user is logged in and is the owner of the blog
     const body = await c.req.parseBody();
-
-    let title = body['post-title'].toString();
-    const postContentFromBody = body['post-content'].toString().trim();
-    const postContent = postContentFromBody ? postContentFromBody : 'empty draft';
-
-    const postContentHTML = await markdownToHTML(postContent);
+    let requestedAction = 'quick'
+    if (body.action.toString().toLowerCase() === 'quick save') requestedAction = 'quick';
+    else if (body.action.toString().toLowerCase() === 'continue editing in full') requestedAction = 'full';
 
     const datetime = body.datetime?.toString() || '';
     let parsedDate = new Date(datetime);
     if (isNaN(parsedDate.getTime())) parsedDate = new Date();
 
-    if (!title.length) {
+    const postContentFromBody = body['post-content'].toString().trim();
+
+    let title = body['post-title'].toString();
+
+    let postContent = 'empty draft'
+    if (!postContentFromBody) {
         const dateFormatOpts: Intl.DateTimeFormatOptions = {
             year: 'numeric',
             month: 'numeric',
             day: 'numeric',
         };
         title = parsedDate.toLocaleDateString('en-UK', dateFormatOpts).replace(/\//g, '.');
+    } else {
+        postContent = postContentFromBody;
+        title = postContent.substring(0, 128);
     }
+
+    const postContentHTML = await markdownToHTML(postContent);
 
     try {
         let item_slug = generate_slug(title);
@@ -205,10 +212,8 @@ export const handleBlogPOST = async (c: Context) => {
             .bind(blog.blog_id, title, item_slug, postContent, postContentHTML, pubDate)
             .run();
 
-        const requestedAction = body.action.toString().toLowerCase();
-        if (requestedAction === 'quick save') return c.redirect('/');
-        if (requestedAction === 'continue editing in full') return c.redirect(`/${item_slug}/edit`);
-        // }
+        if (requestedAction === 'quick') return c.redirect('/');
+        if (requestedAction === 'full') return c.redirect(`/${item_slug}/edit`);
 
         return c.redirect('/');
     } catch (err) {
