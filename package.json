@@ -10,7 +10,7 @@
         "@aws-sdk/client-ses": "^3.668.0",
         "@types/rss": "^0.0.32",
         "highlight.js": "^11.10.0",
-        "hono": "^4.9.7",
+        "hono": "^4.10.2",
         "marked": "^14.1.2",
         "marked-footnote": "^1.2.4",
         "marked-highlight": "^2.2.1",
