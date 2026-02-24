@@ -109,7 +109,7 @@ article h1 {
 
 article .post-date {
     font-family: var(--font-monospace);
-    color: var(--secondary-text);
+    color: var(--color-secondary);
 }
 
 /* Content Elements */
@@ -204,7 +204,7 @@ article figure {
 article figcaption {
     margin-top: 0.5rem;
     font-size: 0.9rem;
-    color: var(--secondary-text);
+    color: var(--color-secondary);
     text-align: center;
 }
 

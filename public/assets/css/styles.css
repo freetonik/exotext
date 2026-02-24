@@ -1,6 +1,6 @@
 :root {
-    --font-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
-    --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+    --font-family: Charter, 'Bitstream Charter', 'Sitka Text', Cambria, serif;
+    --font-monospace: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
 
     --font-size: 18px;
 
@@ -82,6 +82,7 @@ details summary {
     }
 }
 
+h1, h2, h3 { font-weight: 600; }
 /* ================================================================================================================== */
 /* UTILITY */
 
@@ -195,7 +196,7 @@ header a:visited {
 .service-page p {
     text-align: center;
     margin-bottom: 2rem;
-    color: var(--secondary-text);
+    color: var(--color-secondary);
 }
 
 .service-page form .links {
@@ -207,13 +208,13 @@ header a:visited {
 }
 
 .service-page form .links a {
-    color: var(--text-color);
+    color: var(--color-text);
     text-decoration: none;
     border-bottom: 1px solid var(--color-border);
 }
 
 .service-page form .links a:hover {
-    border-bottom-color: var(--text-color);
+    border-bottom-color: var(--color-text);
 }
 
 
@@ -320,7 +321,7 @@ input[type="submit"].button-secondary:hover,
 .blog-url-preview {
     font-family: var(--font-monospace);
     font-size: 0.9rem;
-    color: var(--secondary-text);
+    color: var(--color-secondary);
     margin-top: 0.5rem;
 }
 
@@ -395,7 +396,7 @@ input[type="submit"].button-secondary:hover,
 .label-form {
     font-family: var(--font-monospace);
     font-size: 0.9rem;
-    color: var(--secondary-text);
+    color: var(--color-secondary);
 }
 
 .label {
@@ -446,12 +447,12 @@ input[type="submit"].button-secondary:hover,
 .blog-url {
     font-family: var(--font-monospace);
     font-size: 0.9rem;
-    color: var(--secondary-text);
+    color: var(--color-secondary);
     text-decoration: none;
 }
 
 .blog-url:hover {
-    color: var(--text-color);
+    color: var(--color-text);
 }
 
 /* ================================================================================================================== */
@@ -506,7 +507,7 @@ footer a {
     font-family: inherit;
     border: none;
     background: transparent;
-    color: var(--text-color);
+    color: var(--color-text);
 }
 
 .editor-container .title-input input:focus {
@@ -514,7 +515,7 @@ footer a {
 }
 
 .editor-container .title-input input::placeholder {
-    color: var(--secondary-text);
+    color: var(--color-secondary);
 }
 
 .editor-container .publishing-controls {
