@@ -1,6 +1,10 @@
 :root {
-    --font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Adwaita Sans, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif;
-    --font-monospace: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+    --font-family:
+        -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui,
+        helvetica neue, Adwaita Sans, Cantarell, Ubuntu, roboto, noto,
+        helvetica, arial, sans-serif;
+    --font-monospace:
+        Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
 
     --font-size: 14px;
 
@@ -43,7 +47,6 @@ body {
 header {
     margin-bottom: 6rem;
 }
-
 
 blockquote {
     font-style: italic;
@@ -113,7 +116,7 @@ article .post-date {
 }
 
 /* Content Elements */
-article .post-content>*+* {
+article .post-content > * + * {
     margin-top: 1.5rem;
 }
 
@@ -144,7 +147,7 @@ ol {
     max-width: 65ch;
 }
 
-article li+li {
+article li + li {
     margin-top: 0.5rem;
 }
 
@@ -210,7 +213,7 @@ article figcaption {
 
 /* Tables */
 article table {
-    width: 100%;
+    max-width: 100%;
     border-collapse: collapse;
     margin: 2rem 0;
     font-size: 0.9rem;
