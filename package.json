@@ -7,7 +7,7 @@
         "cf-typegen": "wrangler types --env-interface CloudflareBindings"
     },
     "dependencies": {
-        "@aws-sdk/client-ses": "^3.668.0",
+        "@aws-sdk/client-ses": "^3.1027.0",
         "@types/rss": "^0.0.32",
         "highlight.js": "^11.10.0",
         "hono": "^4.11.7",
